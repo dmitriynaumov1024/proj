@@ -1,0 +1,19 @@
+Use cases
+
+- User account
+    - create
+    - log in
+    - log out
+    - view
+    - edit (display name, biography)
+
+- Project
+    - create
+    - edit (title)
+    - patch data
+    - transfer ownership
+    - add collaborator
+    - remove collaborator
+    - view
+    - view list (own, shared)
+    - delete

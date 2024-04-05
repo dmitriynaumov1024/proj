@@ -1,0 +1,14 @@
+Features
+
+Must have:
+- User Account
+- Project
+- Project sharing
+- Project realtime collaboration
+
+Should have:
+- Project invitation
+- Project snapshots
+
+Could have: 
+- Project plugins

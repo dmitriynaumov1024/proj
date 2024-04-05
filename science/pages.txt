@@ -1,0 +1,8 @@
+Pages
+
+/ - index page
+/me - account page
+/login - login page
+/signup - signup page
+
+/project/:id - project page
