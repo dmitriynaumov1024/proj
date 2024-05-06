@@ -1,0 +1,98 @@
+Q:  How the system should work?
+A:  Most of User Account functions - definitely client initiated HTTP.
+    Project record functions - definitely client initiated HTTP.
+    Project data / workspace functions - definitely WebSocket.
+
+Q:  How to prepare to collaborate on a project?
+A:  1) UserAccount 1: create project A
+    2) UserAccount 1: send invite to UserAccount 2
+    3) UserAccount 2: accept invite
+    4) UserAccount 2: find and open project A
+
+Q:  How to collaborate on a project?
+A:  Collaboration is in real time, so WebSocket will be used. 
+    It could be either centralized or decentralized collaboration. We could 
+    have many collaborators active at the same time, so we could have 
+    collisions and we have to find a way to solve it.
+
+Q:  How to communicate changes in project data?
+A:  Possible approaches:
+    a) Naive approach: client tells server what it wants to do (command and data). Server sends whole project data to clients.
+    b) Granular approach: client tells server what it wants to do (command and data). Server sends only the portion of project data that was updated. Requires locks. Most likely it would require to send in this manner:
+    assume we have object
+    {
+        "a": {
+            "hello": "world"
+        },
+        "b": {
+            "world": "hello"
+        }
+    } 
+    example of diff:
+    {
+        "add": {
+            "a": {
+                "world": "hello"
+            }
+        },
+        "update": {
+            "a": {
+                "hello": "hell"
+            }
+        },
+        "delete": {
+            "b": null
+        }
+    }
+    c) Command broadcast approach: client does all the necessary stuff and uses some once-in-a-while server-provided values to create new objects, sends a command to server, server broadcasts the command to all clients and clients apply the change to local project data. Still may require locks.
+
+Q:  What is centralized collab?
+A:  Centralized collision solving means when User 1 wants to add/edit anything
+    in project data, they have to acquire a Lock to edited object or acquire a unique Uuid for added object.
+    Consider this action sequence:
+    1) User 1 --[connect to]--> Server
+    2) User 2 --[connect to]--> Server
+       Users <--[user connected]-- Server 
+       ^ who connected: User 2 
+    3) User 1 --[get project data]--> Server
+       User 1 <--[project data]-- Server
+       ^ all project data
+    4) User 2 --[get project data]--> Server
+       User 2 <--[project data]-- Server
+       ^ all project data
+    5) User 1 --[lock object]--> Server
+       ^ object id: <some id>
+       if object not locked yet:
+       Users <--[lock acquired]-- Server
+       else:
+       User 1 <--[lock not acquired]-- Server
+    6) 
+
+Q:  What is decentralized collab?
+A:  Decentralized collision solving means on connect to project workspace or 
+    once in a while Users receive timestamp and uid prefix from Server. With uid prefixes, it is possible to detect collision with existing objects on client side and there is no chance a uid collision will arise later due to race condition. 
+
+Q:  Is it possible to do lock-less collab?
+A:  The intention of locks is to avoid update collision. To indicate 
+    that someone is editing existing objects, we can introduce indicators.
+    When user is editing an object, we can "light up" an indicator. 
+    Lock-less indicator approach benefits:
+    + we can know who is interacting with object
+    + object will not be permalocked if user goes afk
+    Lock-less indicator approach means, to make things fair we have to introduce revision history.
+
+Q:  What would be a perfect realtime collab model?
+A:  It would be a big advantage to take load off the server. Server would only
+    accept commands and forward changes to other clients. Actually it is totally possible to add commits, but it may put too much load on the server and clients. So, the action flow would be like:
+    1) User 1 enters task A, 
+       begins changing task name
+    2) User 2 enters task A, 
+       begins changing task name
+    3) User 1 changes task name to "Hello"
+    4) User 2 changes task name to "Hello world"
+    5) User 1 sees unintended change in task name, 
+       opens filtered rev history for task A, reverts one task to value that was before user 2's commit.
+    Most likely commits would be atomic except when a group of tasks is deleted at once.
+
+Q:  How to implement revision history?
+A:  Check projectfunc.txt

@@ -1,0 +1,82 @@
+# Relational
+
+[1][P] Person
++ id: Number
++ userName: String
++ email: String
++ displayName: String
++ biography: String
++ createdAt: Timestamp
+
+[2][1:N]
+Project
++ id: Number
++ ownerId: Number
++ title: String
++ createdAt: Timestamp
++ data: String # json encoded 
+
+[3][M:N]
+ProjectInvolvement
++ projectId: Number PK
++ receiverId: Number PK
++ senderId: Number
++ receiverStatus: InvolvementStatus
++ senderStatus: InvolvementStatus
++ permission: PermissionLevel
++ interactedAt: Timestamp
+
+[enum] PermissionLevel: String
+| "none"
+| "view"
+| "comment"
+| "edit"
+
+[enum] InvolvementStatus: String
+| "none"
+| "invited"
+| "accepted"
+| "rejected"
+
+# Project data
+
+Project
++ title: String
++ description: String
++ createdAt: String
++ tasks: Task[]
++ people: Person[]
++ groups: Group[]
++ taskTemplates: TaskTemplate[]
++ taskStatuses: String[] # default ["created", "to-do", "in-progress", "done"]
+
+Task
++ id: Number 
++ ownerId: Number
++ title: String
++ description: String
++ draft: Boolean
++ createdAt: Timestamp
++ assigned: String[] 
++ status
++ ... custom fields, like "department"
+
+Activity 
++ id: Number
++ taskId: Number
++ assigned: String
++ startedAt: Timestamp
++ finishedAt: Timestamp
+
+Group
++ name: String # identifier
++ displayName: String
++ members: Number[] # person ids
+
+TaskTemplate
++ inputSlots: String[]
++ output: { task: Task, slot: String } # union
+
+## Assignee selector
+"@<userName>" select person with userName 
+"@#<groupName>" select group

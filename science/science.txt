@@ -1,0 +1,10 @@
+Topic: 
+- "Development of a Flexible Project Management System"
+
+Object of study: 
+- "Process of project management"?
+- "Project management process"?
+- "Project management methodology"?
+
+Subject (optional):
+- "Automation in web application format with customizability in mind"

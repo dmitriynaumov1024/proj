@@ -1,0 +1,9 @@
+Q:  Architecture?
+A:  It is client-server architecture. All clients are of same type and rank.  
+
+Q:  Technologies?
+A:  Backend - postgres, nodejs, express, ...
+    Protocols - http, websocket, ...
+    Frontend - javascript, vue 
+
+Q:  

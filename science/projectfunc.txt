@@ -1,0 +1,51 @@
+Q:  How to implement revision history?
+A:  There are different options
+    By Coverage:
+      a) whole project
+      b) single object
+    By Verbosity (applies to whole project):
+      a) compact diff
+      b) full snapshot
+    Commit structure:
+      + hash
+      + parentHash
+      + authorId
+      + authorName
+      + committedAt
+      + before: { ... }
+      + after: { ... }
+      ^ if some key is only in 'after', it's add
+      ^ if some key is only in 'before', it's delete
+      ^ if some key is in 'before' and 'after', it's update
+    Commit functions:
+      + do () // changes project structure according to commit
+      + undo () // reverts project structure to what was before commit 
+      + restore () // restore-commit to head, either all or selected keys
+    To ensure consistency, commits are pushed to an unordered array.
+    Commit tree can be built by navigating on parentHash property.
+    Root commit is determined by parentHash == null.
+    Commit tree can be compacted or pruned by those who have 
+    high privileges (owner).
+      + compact // select a stable version and squash everything between this 
+        and previous stable version
+      + prune // remove side branch and all its commits
+    For safety reasons, commits can not be undone. Undo function is only used to navigate version history. If something needs to be restored, it can be restored by restore-commit. 
+    If because of race condition several commits share a single parentHash:
+      - if changed keys do not intersect, commits can be auto-merged
+      - if changed keys do intersect, it creates commit on side branch, 
+        and it can be merged by restore-commit.     
+
+Q:  Can we offer an alternative to revision history?
+A:  Technically we can put rev history into a separate plugin 
+    and offer these modes:
+    + no rev history at all
+    ^ latest change is preserved, delete has higher priority than update
+    + pure linear rev history
+    ^ changes are added on top of each other, misaligned 'before' in updates is fixed by server, delete has higher priority than update
+    + tree rev history
+    ^ parent hash and 'before' state is preserved. If commit does not reference the latest commit, it goes in a side branch. If a side branch emerges, it can later be merged by restore-commit from first branch commit to branch tip.
+
+Q:  How can we split project into responsibility areas?
+A:  + Commits
+    + Objects
+    + Plugins(?)

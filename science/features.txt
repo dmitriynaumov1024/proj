@@ -1,4 +1,15 @@
-Features
+# General Features
+
+What:
+- Project management system
+
+Format:
+- Web Application
+
+Nonfunctional:
+- Lightweight
+- Realtime
+- Customizable
 
 Must have:
 - User Account
@@ -12,3 +23,16 @@ Should have:
 
 Could have: 
 - Project plugins
+
+# UI Features
+
+Project UI should have:
+- Tasks
+    - Task list (planned tasks)
+    - Task prototypes or templates
+    - Project reports
+    - Task collections or sets
+- Work tracking
+    - Work list (actual work tracking?)
+- Participants
+    - Participants list 
