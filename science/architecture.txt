@@ -6,4 +6,12 @@ A:  Backend - postgres, nodejs, express, ...
     Protocols - http, websocket, ...
     Frontend - javascript, vue 
 
-Q:  
+Q:  Why data model is hybrid (Relational + JSON)?
+A:  For sake of optimization. Advantages:
+    + few relational tables;
+    + easy to maintain;
+    + project data can be cached;
+    Disadvantages:
+    - requires stateful server;
+    - possible data losses.
+

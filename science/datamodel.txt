@@ -24,6 +24,8 @@ ProjectInvolvement
 + receiverStatus: InvolvementStatus
 + senderStatus: InvolvementStatus
 + permission: PermissionLevel
++ sentAt: Timestamp
++ acceptedAt: Timestamp
 + interactedAt: Timestamp
 
 [enum] PermissionLevel: String
@@ -31,6 +33,8 @@ ProjectInvolvement
 | "view"
 | "comment"
 | "edit"
+| "admin"
+| "owner"
 
 [enum] InvolvementStatus: String
 | "none"
