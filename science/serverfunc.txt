@@ -96,3 +96,7 @@ A:  It would be a big advantage to take load off the server. Server would only
 
 Q:  How to implement revision history?
 A:  Check projectfunc.txt
+
+Q:  Event Logging is quite important. How to implement it?
+A:  Event logging and task commits might take up quite a lot of space. 
+    These two collections may be put into a separate object for sake of optimization. Only a necessary portion of commit/event history will be retrieved in case.

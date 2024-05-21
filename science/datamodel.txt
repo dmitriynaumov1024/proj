@@ -14,10 +14,11 @@ Project
 + ownerId: Number
 + title: String
 + createdAt: Timestamp
-+ data: String # json encoded 
++ data: ProjectData/String # json encoded 
++ history: ProjectHistory/String # json encoded
 
 [3][M:N]
-ProjectInvolvement
+ProjectInvolvement # Can be used for both invitations and shared projects
 + projectId: Number PK
 + receiverId: Number PK
 + senderId: Number
@@ -44,43 +45,143 @@ ProjectInvolvement
 
 # Project data
 
-Project
+## Known primitive (or not so primitive) field types
+| "boolean"
+| "integer"
+| "number"
+| "string"
+| "enum"
+| "timestamp"
+
+## Object types
+| "Task"
+| "TaskSet"
+| "TaskTemplate"
+
+## Fundamental task status
+| "unknown"
+| "todo"
+| "working"
+| "finished"
+| "rejected"
+
+## Custom task status examples
+| "todo": "todo"
+| "designing": "working"
+| "implementing": "working"
+| "testing": "working"
+| "deploying": "working"
+| "done": "finished"
+
+ProjectHistory
++ commits:
+  + [value]: ProjectCommit # all about task objects
++ events:
+  + [value]: ProjectEvent # all about other stuff, like join/leave project
+
+ProjectData
 + title: String
 + description: String
-+ createdAt: String
-+ tasks: Task[]
++ createdAt: Timestamp
++ taskObjects: Object
+  + [key]: String
+  + [value]: Task|Milestone|TaskSet|TaskTemplate
++ comments: Object # comments on task objects
+  + [key]: String # task key
+  + [value]: Object
+    + [value]: Comment
++ activities:
+  + [value]: Activity
 + people: Person[]
 + groups: Group[]
-+ taskTemplates: TaskTemplate[]
-+ taskStatuses: String[] # default ["created", "to-do", "in-progress", "done"]
++ taskStatuses: Object
+  + [key]: String # status name
+  + [value]: String # fundamental status name
++ taskFields:
+  + [key]: String # task object type = Task|Milestone|TaskSet
+  + [value]: Object
+    + [key]: String "primary"|"secondary"
+    + [value]: Object
+      + [key]: string
+      + [value]: Field
 
-Task
+Field
++ name: String
++ type: String
++ editable: Boolean
++ min: Number
++ max: Number
++ pattern: String
++ values: String[]
++ default: Boolean|Number|String|Timestamp
+
+TaskObject
 + id: Number 
 + ownerId: Number
++ groupId: String
++ permissions: ObjectPermissionSet
 + title: String
 + description: String
 + draft: Boolean
 + createdAt: Timestamp
+
+Task extends TaskObject
 + assigned: String[] 
-+ status
++ status: String
++ taskSetId: Number
 + ... custom fields, like "department"
+
+Milestone extends TaskObject
++ deadlineAt: Timestamp
+
+TaskSet extends TaskObject
++ get assigned: String[] 
+
+TaskTemplate extends TaskObject
++ slots:
+  + [key]: String
+  + [value]: Field
++ objects:
+  + [value]: 
+    + [key]: String
+    + [value]: 
+      + [0]: String "get"|"set"|"const"
+      + [1]: String|Any # slot name when [0] is "get" or "set",
+                          value when [0] is "const"  
+
+ObjectPermissionSet
++ [key]: String "group"|"everyone" # no "owner" key because 
+                                     owner always has full privileges 
++ [value]: String "view"|"comment"|"edit"
 
 Activity 
 + id: Number
 + taskId: Number
-+ assigned: String
++ personId: String
 + startedAt: Timestamp
 + finishedAt: Timestamp
+
+Comment
++ id: Number
++ createdAt: Timestamp
++ authorId: Number
++ text: String
+
+Person
++ id: Number
++ userName: String
++ email: String
++ displayName: String
++ biography: String
++ createdAt: Timestamp
 
 Group
 + name: String # identifier
 + displayName: String
 + members: Number[] # person ids
 
-TaskTemplate
-+ inputSlots: String[]
-+ output: { task: Task, slot: String } # union
-
 ## Assignee selector
 "@<userName>" select person with userName 
 "@#<groupName>" select group
+
+
