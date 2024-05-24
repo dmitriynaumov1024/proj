@@ -100,3 +100,11 @@ A:  Check projectfunc.txt
 Q:  Event Logging is quite important. How to implement it?
 A:  Event logging and task commits might take up quite a lot of space. 
     These two collections may be put into a separate object for sake of optimization. Only a necessary portion of commit/event history will be retrieved in case.
+
+Q:  How project data would be updated/patched in real time?
+A:  Task Objects can be patched quite easily. When we want to either update,
+    create or delete an object, we can reference it by key. Relatively small lists like People and Groups can be overwritten all at once. But actually it's better not be like that, because whenever we want to add, we can just push yet another object, but when patching or deleting, we might experience difficulties figuring out what object should be picked, so it is better to have every single collection be key-value rather than list.
+
+Q:  Are there any limits to projects?
+A:  Yes, server space is not infinite. We can make some config or env file
+    with all the necessary limits, like max project size, max collaborators, etc. 
