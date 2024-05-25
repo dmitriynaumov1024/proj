@@ -1,14 +1,22 @@
 # Relational
 
 [1][P] Person
-+ id: Number
-+ userName: String
-+ email: String
-+ displayName: String
-+ biography: String
-+ createdAt: Timestamp
++ id: Number # private unique pk
++ userName: String # public unique login
++ email: String # private unique login
++ phoneNumber: String # private
++ displayName: String # public
++ biography: String # public
++ createdAt: Timestamp # public
++ passwordHash: String
 
-[2][1:N]
+[2][1:N] UserSession
++ id: Number
++ personId: Number 
++ password: String
++ expiresAt: Timestamp
+
+[3][1:N]
 Project
 + id: Number
 + ownerId: Number
@@ -17,7 +25,7 @@ Project
 + data: ProjectData/String # json encoded 
 + history: ProjectHistory/String # json encoded
 
-[3][M:N]
+[4][M:N]
 ProjectInvolvement # Can be used for both invitations and shared projects
 + projectId: Number PK
 + receiverId: Number PK
@@ -55,6 +63,7 @@ ProjectInvolvement # Can be used for both invitations and shared projects
 
 ## Object types
 | "Task"
+| "Milestone"
 | "TaskSet"
 | "TaskTemplate"
 
@@ -73,17 +82,21 @@ ProjectInvolvement # Can be used for both invitations and shared projects
 | "deploying": "working"
 | "done": "finished"
 
-ProjectHistory
+## Assignee selector
+| "@<userName>" select person with userName 
+| "@#<groupName>" select group
+
+[21] ProjectHistory
 + head: String # head commit id
-+ commits:
++ commits: Array
   + [value]: ProjectCommit # all about task objects
-+ events:
++ events: Array
   + [value]: ProjectEvent # all about other stuff, like join/leave project
 
-ProjectCommit
+[22] ProjectCommit
 + id: String # or hash
 + parentId: String
-+ authorId: String
++ authorId: Number
 + authorName: String
 + createdAt: Timestamp
 + before: Object # task object tree structure { ... }
@@ -92,7 +105,7 @@ ProjectCommit
   ^ if some key is only in 'before', it's delete
   ^ if some key is in 'before' and 'after', it's update
 
-ProjectEvent
+[23] ProjectEvent
 + id: String
 + type: String
 + description: String
@@ -101,10 +114,16 @@ ProjectEvent
   + [key]: String
   + [value]: String
 
-ProjectData
+[24] ProjectData
 + title: String
 + description: String
 + createdAt: Timestamp
++ taskStatuses: Object
+  + [key]: String # status name
+  + [value]: String # fundamental status name
++ taskFields: Object
+  + [key]: String # task object type = Task|Milestone|TaskSet
+  + [value]: FieldSet
 + taskObjects: Object
   + [key]: String
   + [value]: Task|Milestone|TaskSet|TaskTemplate
@@ -113,29 +132,27 @@ ProjectData
   + [value]: Object
     + [key]: String
     + [value]: Comment
-+ activities: 
++ activities: Object
   + [key]: String # person key
   + [value]: Object
     + [key]: String
     + [value]: Activity
-+ people: 
++ people: Object
   + [key]: String
   + [value]: Person
-+ groups: 
++ groups: Object
   + [key]: String
   + [value]: Group
-+ taskStatuses: Object
-  + [key]: String # status name
-  + [value]: String # fundamental status name
-+ taskFields:
-  + [key]: String # task object type = Task|Milestone|TaskSet
-  + [value]: Object
-    + [key]: String "primary"|"secondary"
-    + [value]: Object
-      + [key]: string
-      + [value]: Field
 
-Field
+[25] FieldSet
++ primary: Object
+  + [key]: String
+  + [value]: Field
++ secondary: Object
+  + [key]: String
+  + [value]: Field
+
+[26] Field
 + name: String
 + type: String
 + editable: Boolean
@@ -145,8 +162,9 @@ Field
 + values: String[]
 + default: Boolean|Number|String|Timestamp
 
-TaskObject
+[27] TaskObject
 + id: Number 
++ type: String
 + ownerId: Number
 + groupId: String
 + permissions: ObjectPermissionSet
@@ -155,63 +173,68 @@ TaskObject
 + draft: Boolean
 + createdAt: Timestamp
 
-Task extends TaskObject
+[28] Task extends TaskObject
 + assigned: String[] 
 + status: String
 + taskSetId: Number
-+ ... custom fields, like "department"
++ estimateHours: Number
++ estimatePoints: Number
++ ...
 
-Milestone extends TaskObject
+[29] Milestone extends TaskObject
 + deadlineAt: Timestamp
++ ...
 
-TaskSet extends TaskObject
-+ status: String # fundamental status
+[30] TaskSet extends TaskObject
++ status: String 
 + get assigned: String[] 
++ ...
 
-TaskTemplate extends TaskObject
-+ slots:
+[31] TaskTemplate extends TaskObject
++ slots: Object
   + [key]: String
   + [value]: Field
-+ objects:
-  + [value]: 
-    + [key]: String
-    + [value]: 
-      + [0]: String "get"|"set"|"const"
-      + [1]: String|Any # slot name when [0] is "get" or "set",
-                          value when [0] is "const"  
++ output: Array
+  + [value]: Object
+    + type: ObjectType
+    + fields: TaskTemplateFieldSet
 
-ObjectPermissionSet
+[32] TaskTemplateFieldSet
++ [key]: String # field name
++ [value]: Object
+  + const: Boolean
+  + set: Boolean
+  + get: Boolean
+  + slot: String
+  + value: Any
+
+[33] ObjectPermissionSet
 + [key]: String "group"|"everyone" # no "owner" key because 
                                      owner always has full privileges 
 + [value]: String "view"|"comment"|"edit"
 
-Activity 
+[34] Activity 
 + id: Number
 + taskId: Number
-+ personId: String
++ personId: Number
 + startedAt: Timestamp
 + finishedAt: Timestamp
 
-Comment
+[35] Comment
 + id: Number
 + createdAt: Timestamp
 + authorId: Number
 + text: String
 
-Person
+[36] Person
 + id: Number
 + userName: String
-+ email: String
 + displayName: String
 + biography: String
 + createdAt: Timestamp
 + permission: PermissionLevel 
 
-Group
+[37] Group
 + name: String # identifier
 + displayName: String
 + members: Number[] # person ids
-
-## Assignee selector
-"@<userName>" select person with userName 
-"@#<groupName>" select group
