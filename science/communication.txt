@@ -1,0 +1,61 @@
+# Communication
+
+1. Frontend URIs
+
+check ./pages.txt
+
+2. Rest API URIs
+
+-   /api/info
+    info about this rest api server
+
+-   /api/auth
+    authentication & authorization stuff
+    -   /login
+    -   /logout
+    -   /refresh
+
+-   /api/person
+    user profile management
+    -   /create
+    -   /update
+    -   /view?id={id}
+
+-   /api/project
+    project management
+    -   /create
+    -   /update
+    -   /transfer?id={id}
+    -   /view?id={id}
+    -   /delete?id={id}
+
+-   /api/projectinvolvement
+    project involvement management
+    -   /create
+    -   /update
+    -   /view?personId={personId}&projectId={projectId}
+    -   /list?page={page}&personId={personId}
+
+-   /api/plugin
+    plugin management
+    -   /create
+    -   /update
+    -   /view?id={id}
+    -   /list?page={page}&query={query}
+
+3. WebSocket
+
+-   /ws
+    connect to one websocket endpoint
+
+-   auth (personId)
+    auth as person with given id
+
+-   subscribe (projectId)
+    subscribe to given project
+
+-   patch (projectId, data)
+    patch project data
+
+-   request (projectId, topic, page)
+    request for commits or event log or plugins

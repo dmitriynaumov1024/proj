@@ -7,14 +7,34 @@ Use cases
     - view
     - edit (display name, biography)
 
-- Project
+- Plugin
+    - create 
+    - edit
+    - view
+    - find
+
+- Project record
     - create
     - edit (title)
-    - patch data
+    - delete
+    - add plugin
+    - remove plugin
     - transfer ownership
     - add collaborator
     - remove collaborator
     - remove self (leave)
-    - view
     - view list (own, shared)
-    - delete
+
+- Project data
+    - edit description
+    - manage settings/prefs
+    - manage custom task fields
+    - manage tasks, milestones, task sets
+    - manage, use task templates
+    - write comments
+    - track activities
+    - manage people
+    - manage groups
+    - view reports
+    - view task object history
+    - view event log

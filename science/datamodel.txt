@@ -11,24 +11,26 @@
 + passwordHash: String
 
 [2][1:N] UserSession
-+ id: Number
-+ personId: Number 
++ id: Number PK
++ personId: Number FK(Person) 
 + password: String
 + expiresAt: Timestamp
 
-[3][1:N]
-Project
-+ id: Number
+[3][1:N] ProjectInfo
++ id: Number PK
 + ownerId: Number
 + title: String
 + createdAt: Timestamp
+
+[4][1:1] Project
++ id: Number PK FK(ProjectInfo)
 + data: ProjectData/String # json encoded 
 + history: ProjectHistory/String # json encoded
++ plugins: PluginInfo[]/String # json encoded
 
-[4][M:N]
-ProjectInvolvement # Can be used for both invitations and shared projects
-+ projectId: Number PK
-+ receiverId: Number PK
+[5][M:N] ProjectInvolvement 
++ projectId: Number PK FK(ProjectInfo)
++ receiverId: Number PK FK(Person)
 + senderId: Number
 + receiverStatus: InvolvementStatus
 + senderStatus: InvolvementStatus
@@ -36,6 +38,15 @@ ProjectInvolvement # Can be used for both invitations and shared projects
 + sentAt: Timestamp
 + acceptedAt: Timestamp
 + interactedAt: Timestamp
+
+[6][1:N] Plugin
++ id: Number PK
++ authorId: Number FK(Person)
++ name: String 
++ version: String
++ description: String
++ depends: PluginInfo[]/String # json encoded
++ code: String
 
 [enum] PermissionLevel: String
 | "none"
@@ -118,6 +129,7 @@ ProjectInvolvement # Can be used for both invitations and shared projects
 + title: String
 + description: String
 + createdAt: Timestamp
++ preferences: Object
 + taskStatuses: Object
   + [key]: String # status name
   + [value]: String # fundamental status name
@@ -202,11 +214,13 @@ ProjectInvolvement # Can be used for both invitations and shared projects
 [32] TaskTemplateFieldSet
 + [key]: String # field name
 + [value]: Object
-  + const: Boolean
-  + set: Boolean
-  + get: Boolean
-  + slot: String
-  + value: Any
+  + eval: Boolean # field := expression(slots)
+  + const: Boolean # field := value
+  + set: Boolean # slot := field
+  + get: Boolean # field := slot
+  + expression: String # will be evaluated, at your own risk
+  + slot: String # slot name
+  + value: String # exact value
 
 [33] ObjectPermissionSet
 + [key]: String "group"|"everyone" # no "owner" key because 
@@ -238,3 +252,9 @@ ProjectInvolvement # Can be used for both invitations and shared projects
 + name: String # identifier
 + displayName: String
 + members: Number[] # person ids
+
+[38] PluginInfo
++ id: Number
++ authorId: Number
++ name: String 
++ version: String

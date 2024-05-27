@@ -1,8 +1,33 @@
 Pages
 
-/ - index page
-/me - account page
-/login - login page
-/signup - signup page
+-   / or /index 
+    landing page with description of this project management platform
+    links: /login, /signup, /me
 
-/project/:id - project page
+-   /login
+    login page
+    links: /signup
+
+-   /signup
+    signup page
+    links: /login
+
+-   /me
+    profile & recent projects overview page
+    links: /projects?page=1
+
+-   /projects?page={page}
+    own projects & shared projects pages
+
+-   /project/info/{id}
+    project info & edit
+    links: /project/workspace/{id}
+
+-   /project/workspace/{id}
+    connect to project workspace
+
+-   /plugins?query={query}&page={page}
+    plugins overview
+
+-   /plugin/info/{id}
+    plugin info & edit
