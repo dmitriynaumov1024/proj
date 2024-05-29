@@ -26,7 +26,7 @@ Pages
 -   /project/workspace/{id}
     connect to project workspace
 
--   /plugins?query={query}&page={page}
+-   /plugins?query={query}&authorId={authorId}&page={page}
     plugins overview
 
 -   /plugin/info/{id}

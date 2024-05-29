@@ -1,13 +1,13 @@
 # Relational
 
 [1][P] Person
-+ id: Number # private unique pk
-+ userName: String # public unique login
-+ email: String # private unique login
-+ phoneNumber: String # private
-+ displayName: String # public
-+ biography: String # public
-+ createdAt: Timestamp # public
++ id: Number PK
++ userName: String unique
++ email: String unique
++ phoneNumber: String
++ displayName: String
++ biography: String
++ createdAt: Timestamp
 + passwordHash: String
 
 [2][1:N] UserSession
@@ -18,7 +18,7 @@
 
 [3][1:N] ProjectInfo
 + id: Number PK
-+ ownerId: Number
++ ownerId: Number FK(Person)
 + title: String
 + createdAt: Timestamp
 
@@ -43,6 +43,7 @@
 + id: Number PK
 + authorId: Number FK(Person)
 + name: String 
++ public: Boolean
 + version: String
 + description: String
 + depends: PluginInfo[]/String # json encoded
