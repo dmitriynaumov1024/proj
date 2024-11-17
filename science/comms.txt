@@ -1,0 +1,4 @@
+Q: how are we going to set up client-server comms to not mess it up?
+A: we can actually have a unified business logic system and attachment of stateful clients (web socket) and attachment of stateless clients (restful), and an authentication-authorization system (auth).
+We define a set of methods that require resource id and action description, so every single request is like: "hello, [optional: i am person X], i want to interact with item of type T and id Y, and i want to do this way: [param p1, param p2, ...]".
+Every method must have a statefullness flag. So we can know whether we allow it on restful or only on websocket.

@@ -1,62 +1,158 @@
 # Relational
 
 [1][P] User
-+ id: String PK
-+ userName: String unique
-+ email: String unique??
-+ displayName: String
-+ createdAt: Timestamp
-+ passwordHash: String
+--- fields
+  + id: String PK
+  + userName: String unique regex([a-z][a-z0-9\_\-]+)
+  + email: String
+  + displayName: String
+  + createdAt: Timestamp
+  + confirmedAt: Timestamp
+  + passwordHash: String
+  + preferences: Object/String json encoded
+--- user.create
+  + id = uuid()
+  + userName = request.user.userName
+  + email = request.user.email
+  + displayName = request.user.displayName
+  + passwordHash = hash(request.user.password)
+  + createdAt = Date.now()
+--- user.updatePassword
+  + passwordHash = hash(request.user.passwordNew)
+--- user.update
+  + email = request.user.email
+  + displayName = request.user.displayName
+  + preferences = Object.assign({}, user.preferences, request.user.preferences)
 
 [2][1:N] UserSession
-+ id: String PK
-+ userId: String FK(User)
-+ token: String
-+ tokenOld: String
-+ shortCode: String
-+ createdAt: Timestamp
-+ refreshAt: Timestamp
-+ expireAt: Timestamp
+--- fields
+  + id: String PK
+  + userId: String FK(User)
+  + token: String
+  + tokenOld: String
+  + shortCode: String
+  + createdAt: Timestamp
+  + refreshAt: Timestamp
+  + expireAt: Timestamp
 
 [3][1:N] ProjectInfo
-+ id: String PK
-+ ownerId: String FK(User)
-+ title: String
-+ public: Boolean
-+ createdAt: Timestamp
+--- fields
+  + id: String PK
+  + ownerId: String FK(User)
+  + title: String
+  + publicRead: Boolean
+  + publicClone: Boolean
+  + createdAt: Timestamp
+  ^ public means everyone besides involved users can read project and data 
+--- relations
+  + owner: belongs to one User FK(ownerId)
+  + project: has one Project FK(id)
+--- project.create
+  + id = uuid()
+  + createdAt = Date.now()
+  + ownerId = context.user.id
+  + title = request.project.title ?? "Untitled Project"
+  + publicRead = false
+  + publicClone = false
+--- project.update
+  + title = request.project.title
+  + publicRead = request.project.publicRead
+  + publicClone = request.project.publicRead
+--- project.clone
+  + id = uuid()
+  + createdAt = Date.now()
+  + ownerId = context.user.id
+  + title = context.project.title
+  + publicRead = context.project.publicRead
+  + publicClone = false
+  + project = clone(context.project.project)
 
 [4][1:1] Project
-+ id: String PK FK(ProjectInfo)
-+ data: ProjectData/String # json encoded 
-+ history: ProjectHistory/String # json encoded
-+ plugins: PluginVersion[]/String # json encoded
+--- fields
+  + id: String PK FK(ProjectInfo)
+  + data: ProjectData/String # json encoded 
+  + history: ProjectHistory/String # json encoded
+  + plugins: PluginVersion[]/String # json encoded
 
 [5][M:N] ProjectInvolvement 
-+ projectId: String PK FK(ProjectInfo)
-+ receiverId: String PK FK(User)
-+ senderId: String FK(User)
-+ receiverStatus: InvolvementStatus
-+ senderStatus: InvolvementStatus
-+ permission: PermissionLevel
-+ sentAt: Timestamp
-+ acceptedAt: Timestamp
-+ interactedAt: Timestamp
+--- fields
+  + projectId: String PK FK(ProjectInfo)
+  + receiverId: String PK FK(User)
+  + senderId: String FK(User)
+  + receiverStatus: InvolvementStatus
+  + senderStatus: InvolvementStatus
+  + permission: PermissionLevel
+  + sentAt: Timestamp
+  + acceptedAt: Timestamp
+  + interactedAt: Timestamp
+--- relations
+  + project: belongs to one Project FK(projectId)
+  + receiver: belongs to one User FK(receiverId)
+  + sender: belongs to one User FK(senderId)
+--- project.involvement.create
+  + projectId = request.project.id
+  + receiverId = request.receiver.id
+  + senderId = context.user.id
+  + receiverStatus = "none"
+  + senderStatus = "invited"
+  + permission = request.project.permission
+--- project.involvement.accept
+  + receiverStatus = "accepted"
+  + acceptedAt = Date.now()
+--- project.involvement.reject
+  + receiverStatus = "rejected"
+--- project.involvement.invite
+  + senderStatus = "invited"
+  + receiverStatus = "none"
+--- project.involvement.kick
+  + senderStatus = "rejected"
+  + receiverStatus = "none"
 
-[6][1:N] PluginInfo
-+ id: String PK 
-+ authorId: String FK(User)
-+ name: String
-+ createdAt: Timestamp
-+ description: String
-^ Plugin.id can just be built as Plugin.author.userName + Plugin.name
+[6][1:N] Plugin
+--- fields
+  + id: String PK 
+  + authorId: String FK(User)
+  + name: String
+  + createdAt: Timestamp
+  + description: String
+  ^ Plugin.id can be built
+    as Plugin.author.userName + Plugin.name
+--- relations
+  + author: belongs to one User FK(authorId)
+--- plugin.create
+  + id = context.user.userName + "/" + request.plugin.name
+  + authorId = context.user.id
+  + name = request.plugin.name
+  + description = request.plugin.description
+  + createdAt = Date.now()
+--- plugin.update
+  + description = request.plugin.description
 
 [7][1:N] PluginVersion
-+ id: String PK
-+ pluginId: String FK(PluginInfo)
-+ version: String
-+ createdAt: Timestamp
-+ publishedAt: Timestamp
-+ depends: PluginVersion[]/String # json encoded
+--- fields
+  + id: String PK
+  + pluginId: String FK(Plugin)
+  + version: String
+  + createdAt: Timestamp
+  + publishedAt: Timestamp
+  + depends: PluginVersion[]/String # json encoded
+  ^ PluginVersion.id can be built
+    as PluginVersion.parent.id + PluginVersion.version
+--- relations
+  + parent: belongs to one Plugin FK(pluginId)
+--- plugin.version.create
+  + id = request.parent.id + "/" + request.plugin.version
+  + version = request.plugin.version
+  + createdAt = Date.now()
+--- plugin.version.clone
+  + id = request.parent.id + "/" + request.plugin.version
+  + version = request.plugin.version
+  + depends = context.plugin.depends
+  + createdAt = Date.now()
+--- plugin.version.update
+  + depends = request.plugin.depends
+--- plugin.version.publish
+  + publishedAt = Date.now()
 
 [enum] PermissionLevel: String
 | "none"

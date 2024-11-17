@@ -38,3 +38,87 @@ Use cases
     - view reports
     - view task object history
     - view event log
+
+1. Create user account
+client does:
+    sends POST ./user.create { user { userName, email, displayName } }
+server does:
+    if (userName is not valid):
+        return { success: false, bad: "userName" }
+    else if (email is not valid): 
+        return { success: false, bad: "email"}
+    else if (userName exists in db):
+        return { success: false, exists: "userName" } 
+    else:
+        add user to db.users
+        return { success: true }
+
+2. Log in
+client does:
+    sends POST ./auth.begin { user { email } }
+server does:
+    if (user not exists):
+        return { success: false, notFound: true } 
+    else if (user has password): 
+        create user session
+        if (user.preferences.alwaysShortCode):
+            async send short code to user's email
+            return { 
+                success: true, method: ["shortCode", "password"], 
+                session: { id }
+            }
+        else:
+            return { 
+                success: true, method: ["password"],
+                session: { id }
+            }
+    else:
+        create user session
+        async send short code to user's email
+        return { 
+            success: true, method: ["shortCode"],
+            session: { id }
+        }
+client does: 
+    go to #4
+
+3. Forgot password
+client does:
+    sends POST ./auth.forgot { user { email } }
+server does:
+    if (user not exists):
+        return { success: false, notFound: true } 
+    else: 
+        create user session
+        async send short code to user's email
+        return { success: true, method: ["shortCode"], session: { id } }
+client does:
+    go to #4
+
+4. Finish logging in
+client does:
+    sends POST ./auth.complete { 
+        user { password, shortCode }, session { id } 
+    }
+server does:
+    if (session not exists) or (session expired): 
+        return { success: false, expired: true }
+    else if (password not valid):
+        return { success: false, bad: "password" }
+    else if (shortCode not valid):
+        return { success: false, bad: "shortCode" }
+    else: 
+        return { success: true, session: { id, token } }
+
+5. Refresh/Validate session
+client does:
+    sends POST ./auth.ping {
+        session { id, token }
+    }
+server does:
+    if (session not exists) or (session not valid):
+        return { success: false }
+    else if (session to be refreshed):
+        return { success: true, session: { id, token } }
+    else:
+        return { success: true, session: { id } }

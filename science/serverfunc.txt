@@ -108,3 +108,16 @@ A:  Task Objects can be patched quite easily. When we want to either update,
 Q:  Are there any limits to projects?
 A:  Yes, server space is not infinite. We can make some config or env file
     with all the necessary limits, like max project size, max collaborators, etc. 
+
+Q:  How to do user sessions?
+A:  We can go by this:
+    1) Client not logged in and has no session
+    2) Client goes to /login page
+    3) Client acquires session by /api/auth/refresh and then submits session in authorization header in every request
+    4) Client logs in by /api/auth/login, sets personId in existing session
+    5) Client's user session is about to expire
+    6) Client refreshes session by /api/auth/refresh, refreshes expiration and token
+    7) Client logs out, sets personId to null
+    8) Client's user session expires after a while
+    9) Server removes that session from session cache
+
