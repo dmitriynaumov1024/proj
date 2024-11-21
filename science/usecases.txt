@@ -41,7 +41,7 @@ Use cases
 
 1. Create user account
 client does:
-    sends POST ./user.create { user { userName, email, displayName } }
+    sends POST ./user/create { user { userName, email, displayName } }
 server does:
     if (userName is not valid):
         return { success: false, bad: "userName" }
@@ -55,7 +55,7 @@ server does:
 
 2. Log in
 client does:
-    sends POST ./auth.begin { user { email } }
+    sends POST ./auth/begin { user { userName } }
 server does:
     if (user not exists):
         return { success: false, notFound: true } 
@@ -84,7 +84,7 @@ client does:
 
 3. Forgot password
 client does:
-    sends POST ./auth.forgot { user { email } }
+    sends POST ./auth/forgotpass { user { userName } }
 server does:
     if (user not exists):
         return { success: false, notFound: true } 
@@ -93,11 +93,21 @@ server does:
         async send short code to user's email
         return { success: true, method: ["shortCode"], session: { id } }
 client does:
-    go to #4
+    sends POST ./auth/resetpass { 
+        session { id }, user { shortCode }
+    }
+server does:
+    if (session not exists) or (session expired):
+        return { success: false, expired: true }
+    else if (shortCode not valid): 
+        return { success: false, bad: "shortCode" }
+    else: 
+        return { success: true, session: { id, token, refreshAt } }
+client is now logged in
 
 4. Finish logging in
 client does:
-    sends POST ./auth.complete { 
+    sends POST ./auth/complete { 
         user { password, shortCode }, session { id } 
     }
 server does:
@@ -108,11 +118,12 @@ server does:
     else if (shortCode not valid):
         return { success: false, bad: "shortCode" }
     else: 
-        return { success: true, session: { id, token } }
+        return { success: true, session: { id, token, refreshAt } }
+client is now logged in
 
 5. Refresh/Validate session
 client does:
-    sends POST ./auth.ping {
+    sends POST ./auth/ping {
         session { id, token }
     }
 server does:
@@ -122,3 +133,66 @@ server does:
         return { success: true, session: { id, token } }
     else:
         return { success: true, session: { id } }
+
+6. Update user
+client does:
+    sends POST ./user/update {
+        session { id, token },
+        user { email, displayName, preferences }
+    }
+server does:
+    gets user from session
+    if (user not exists):
+        return { success: false, notAuthorized: true }
+    else:
+        update user in database
+        return { success: true }
+
+7. Update user password
+client does:
+    sends POST ./user/updatepass {
+        session { id, token },
+        user { password, passwordNew }
+    }
+server does:
+    gets user from session
+    if (user not exists):
+        return { success: false, notAuthorized: true }
+    else if (password not match):
+        return { success: false, bad: "password" }
+    else:
+        update user in database
+        return { success: true }
+
+8. Get user's own profile
+client does:
+    sends POST ./user/whoami {
+        session { id, token }
+    }
+server does:
+    if (session not valid or not authorized):
+        return { success: false, notAuthorized: true }
+    else:
+        get user id by session
+        get user by user id
+        return { success: true, user: { ...User } }
+
+9. Get user's profile by id or username
+client does:
+    sends POST ./user/find {
+        session { id, token },
+        user { id, userName }
+    }
+server does:
+    let user = null
+    if (id provided):
+        user = get user by id
+    if (user is null): 
+        user = get user by userName
+    if (user is null):
+        return { success: false, notFound: true }
+    else:
+        return { 
+            success: true, 
+            user: { id, email, displayName, userName, createdAt } 
+        }

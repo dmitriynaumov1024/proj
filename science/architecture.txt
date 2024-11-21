@@ -15,3 +15,16 @@ A:  For sake of optimization. Advantages:
     - requires stateful server;
     - possible data losses.
 
+Q:  Backend architecture?
+A:  - Backend infrastructure: 
+        - Filesystem adapter (for plugins)
+        - Database adapter
+        - Cache adapter
+        - Mail sender
+        - Logger
+    - Backend logic:
+        - Proj system
+    - Web adapters:
+        - Web socket handler
+        - Web api / rest api handler
+        - Static file server

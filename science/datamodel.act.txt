@@ -69,14 +69,14 @@
 
 [4][1:1] Project
 --- fields
-  + id: String PK FK(ProjectInfo)
+  + id: String PK FK(ProjectInfo) delete cascade
   + data: ProjectData/String # json encoded 
   + history: ProjectHistory/String # json encoded
   + plugins: PluginVersion[]/String # json encoded
 
 [5][M:N] ProjectInvolvement 
 --- fields
-  + projectId: String PK FK(ProjectInfo)
+  + projectId: String PK FK(ProjectInfo) delete cascade
   + receiverId: String PK FK(User)
   + senderId: String FK(User)
   + receiverStatus: InvolvementStatus
@@ -95,6 +95,8 @@
   + senderId = context.user.id
   + receiverStatus = "none"
   + senderStatus = "invited"
+  + permission = request.project.permission
+--- project.involvement.update
   + permission = request.project.permission
 --- project.involvement.accept
   + receiverStatus = "accepted"
