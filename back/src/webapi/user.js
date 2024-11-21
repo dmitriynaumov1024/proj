@@ -23,4 +23,15 @@ route.post("/updatepass", defineHandler(async (context)=> {
     return result
 }))
 
+route.post("/whoami", defineHandler(async (context)=> {
+    let { system, body } = context
+    return await system.user.whoami({ session: body.session })
+}))
+
+route.post("/find", defineHandler(async (context)=> {
+    let { system, body } = context
+    let user = await system.auth.getUser({ session: body.session })
+    return await system.user.find({ user: body.user }, { user: user })
+}))
+
 export default { route }

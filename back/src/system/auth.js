@@ -7,16 +7,25 @@ const sessionExpireTime = 48*60*60*1000 // 48 hours
 
 const shortCodeLength = 6
 
+const sessionCleanupIntervalTime = 60*1000 // 60 seconds
+
 export class Auth extends SystemUnit 
 {
-    async getSession (session) {
-        let { database } = this.infrastructure
-        return { }
+    constructor(options) {
+        super(options)
+        this.intervals ??= [ ]
+        this.intervals.push(
+            setInterval(()=> this.removeExpiredSessions(), sessionCleanupIntervalTime)
+        )
     }
 
-    test () {
-        let { logger } = this.infrastructure
-        return { logger }
+    async removeExpiredSessions () {
+        let { database, logger } = this.infrastructure
+        let count = await database.userSession.query()
+            .where("expireAt", "<", Date.now() - 1000).delete()
+        if (count > 0) {
+            logger.warn(`Cleaned up ${count} expired sessions`)
+        }
     }
 
     /*

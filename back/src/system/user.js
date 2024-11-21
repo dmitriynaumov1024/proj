@@ -146,4 +146,77 @@ export class User extends SystemUnit
 
         return { success: true }
     }
+
+
+    /*
+    Get user's own profile
+    client does:
+        sends POST ./user/whoami {
+            session { id, token }
+        }
+    server does:
+        if (session not valid or not authorized):
+            return { success: false, notAuthorized: true }
+        else:
+            get user id by session
+            get user by user id
+            return { success: true, user: { ...User } }
+    */
+    async whoami ({ session }) {
+        let reqSessionOk = session && session.id && session.token
+        if (!reqSessionOk) return { success: false, notAuthorized: true }
+        
+        let theUser = await this.parent.auth.getUser({ session, wholeUser: true })
+        if (!theUser) return { success: false, notAuthorized: true }
+
+        theUser.passwordHash = undefined
+        return { success: true, user: theUser }
+    }
+
+    /*
+    Get user's profile by id or username
+    client does:
+        sends POST ./user/find {
+            session { id, token },
+            user { id, userName }
+        }
+    server does:
+        let user = null
+        if (id provided):
+            user = get user by id
+        if (user is null): 
+            user = get user by userName
+        if (user is null):
+            return { success: false, notFound: true }
+        else:
+            return { success: true, user: { id, email, userName, displayName, createdAt } }
+    */
+    async find ({ user }, context) {
+        let requestOk = user && (user.id || user.userName)
+        if (!requestOk) return { success: false, bad: ["id", "userName"] }
+
+        let { database } = this.infrastructure
+        let theUser = null
+        if (user.id) {
+            theUser = await database.user.query().where("id", user.id).first()
+        }
+        if (!theUser && user.userName) {
+            theUser = await database.user.query().where("userName", user.userName).first()
+        }
+        if (!theUser) {
+            return { success: false, notFound: true }
+        }
+
+        return {
+            success: true,
+            user: {
+                id: theUser.id,
+                email: theUser.email,
+                userName: theUser.userName,
+                displayName: theUser.displayName,
+                createdAt: theUser.createdAt
+            }
+        }
+    }
+
 }

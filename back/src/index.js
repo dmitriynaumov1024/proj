@@ -51,7 +51,10 @@ server.http.use(requestLogger(()=> logger))
 let api = server.http.subpath("/api")
 
 import { bodyParser } from "better-express"
-api.use(bodyParser.json())
+api.use(bodyParser.text({ type: "application/json" }))
+
+import { bodyTextToJson } from "./middleware/body-text-to-json.js"
+api.use(bodyTextToJson())
 
 import { requestItemProvider } from "./middleware/item-provider.js"
 api.use(requestItemProvider(p=> {
