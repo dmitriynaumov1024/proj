@@ -201,6 +201,17 @@ export class ProjectInfo extends Model
             }
         }
     }
+
+    static rules = {
+        title: {
+            min: 0,
+            max: 128,
+            default: "Untitled Project",
+            clamp (value) {
+                return value.slice(0, 128)
+            }
+        }
+    }
 }
 
 /*

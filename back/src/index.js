@@ -70,6 +70,9 @@ api.use("/auth", auth.route)
 import user from "./webapi/user.js"
 api.use("/user", user.route)
 
+import project from "./webapi/project.js"
+api.use("/project", project.route)
+
 // fallback
 api.use((request, response)=> {
     response.status(404).json({
