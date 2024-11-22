@@ -5,7 +5,8 @@
     "type": "module",
     "scripts": {
         "dev": "node src/index.js",
-        "exec": "node"
+        "exec": "node",
+        "curl": "node utils/CURL.js"
     },
     "dependencies": {
         "better-express": "git+https://github.com/dmitriynaumov1024/lib-better-express.git",
@@ -18,5 +19,8 @@
         "objection": "^3.1.2",
         "sqlite3": "^5.1.7",
         "ws": "^8.18.0"
+    },
+    "devDependencies": {
+        "undici": "^6.21.0"
     }
 }
