@@ -6,8 +6,29 @@ let route = createRouter()
 
 route.post("/create", defineHandler(async (context)=> {
     let { system, body } = context
-    let sesiUser = await system.auth.getUser({ session: body.session }) 
-    let result = await system.project.create({ project: body.project }, { user: sesiUser })
+    let innerContext = { user: await system.auth.getUser({ session: body.session }) }
+    let result = await system.project.create({ project: body.project }, innerContext)
+    return result
+}))
+
+route.post("/update", defineHandler(async (context)=> {
+    let { system, body } = context
+    let innerContext = { user: await system.auth.getUser({ session: body.session }) }
+    let result = await system.project.update({ project: body.project }, innerContext)
+    return result
+}))
+
+route.post("/find", defineHandler(async (context)=> {
+    let { system, body } = context
+    let innerContext = { user: await system.auth.getUser({ session: body.session }) }
+    let result = await system.project.find({ project: body.project }, innerContext)
+    return result
+}))
+
+route.post("/clone", defineHandler(async (context)=> {
+    let { system, body } = context
+    let innerContext = { user: await system.auth.getUser({ session: body.session }) }
+    let result = await system.project.clone({ project: body.project }, innerContext)
     return result
 }))
 

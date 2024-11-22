@@ -60,6 +60,10 @@ export class ProjectInvolvement extends SystemUnit
             interactedAt: autoAccept? now : null
         })
 
+        // TO DO:
+        // if not autoaccept, system should send 
+        // notification to receiver's email address.
+
         return {
             success: true,
             projectInvolvement: result
@@ -208,7 +212,8 @@ export class ProjectInvolvement extends SystemUnit
         let newInvolvement = { 
             senderStatus: IS[status],
             receiverStatus: IS.none,
-            senderId: context.user.id
+            senderId: context.user.id,
+            permission: PL[projectInvolvement.permission] ?? existingInvolvement.permission 
         }
 
         let changed = newInvolvement.senderStatus && 
