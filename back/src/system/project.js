@@ -5,6 +5,8 @@ import { hash } from "common/utils/hash"
 import { ProjectInfo as ProjectInfoModel } from "../database/models.js"
 import { PermissionLevel as PL, InvolvementStatus as IS } from "../database/enums.js"
 
+const pageSize = 20
+
 export class Project extends SystemUnit
 {
     /*
@@ -267,6 +269,80 @@ export class Project extends SystemUnit
             success: true, 
             project: { id: newProjectInfo.id },
             projectInvolvement: projectInvolvement
+        }
+    }
+
+    /*
+    Get list of own or related projects
+    assume project = { ownerId?, ownerUserName?, receiverStatus?, page? }
+    */
+    async getOwnList ({ project }, context) {
+        project ??= { }
+        if (!(project.page > 0)) project.page = 1
+
+        let userOk = context?.user?.id
+        if (!userOk) return { success: false, notAuthorized: true }
+
+        let { database } = this.infrastructure
+
+        let query = database.projectInvolvement.query()
+            .withGraphJoined("[project.[owner]]")
+            .whereNot("senderStatus", "=", IS.rejected)
+            .where("receiverId", context.user.id)
+        
+        if (project.receiverStatus) {
+            query = query.where("receiverStatus", "=", project.receiverStatus)
+        }
+
+        if (project.ownerId) {
+            query = query.where("project.ownerId", "=", project.ownerId)
+        }
+        else if (project.ownerUserName) {
+            query = query.where("project:owner.userName", "=", project.ownerUserName)
+        }
+
+        let projects = await query.orderBy("interactedAt", "desc", "last")
+            .offset(pageSize*(project.page-1)).limit(pageSize)
+
+        for (let p of projects) {
+            // hide sensitive information
+            if (p.project.owner) p.project.owner = 
+                filterFields(p.project.owner, ["id", "email", "displayName", "userName"])
+        }
+
+        return {
+            success: true,
+            projects: projects,
+            page: project.page
+        }
+    }
+
+    /*
+    Get list of someone's public projects
+    assume project = { ownerId?, page? } 
+    we don't expect ownerUserName here, because in client app 
+    this usecase will only be reached from owner's profile page 
+    that should already contain id.
+    */
+    async getForeignList ({ project }, context) {
+        let requestOk = project?.ownerId 
+        if (!requestOk) return { success: false, badRequest: true }
+
+        if (!(project.page > 0)) project.page = 1
+
+        let { database } = this.infrastructure
+
+        let query = database.projectInfo.query()
+            .where("ownerId", project.ownerId)
+            .where("publicRead", true)
+            .orderBy("createdAt", "desc", "last")
+
+        let projects = await query.offset(pageSize*(project.page-1)).limit(pageSize)
+
+        return {
+            success: true,
+            projects: projects,
+            page: project.page
         }
     }
 }

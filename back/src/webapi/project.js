@@ -32,6 +32,19 @@ route.post("/clone", defineHandler(async (context)=> {
     return result
 }))
 
+route.post("/own-list", defineHandler(async (context)=> {
+    let { system, body } = context
+    let innerContext = { user: await system.auth.getUser({ session: body.session }) }
+    let result = await system.project.getOwnList({ project: body.project }, innerContext)
+    return result
+}))
+
+route.post("/foreign-list", defineHandler(async (context)=> {
+    let { system, body } = context
+    let result = await system.project.getForeignList({ project: body.project }, { })
+    return result
+}))
+
 route.post("/involvement/create", defineHandler(async (context)=> {
     let { system, body } = context
     let innerContext = {
