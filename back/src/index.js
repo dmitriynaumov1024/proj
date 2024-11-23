@@ -78,8 +78,8 @@ api.use(requestItemProvider(p=> {
     p.provide("system", ()=> system)
 }))
 
-import info from "./webapi/info.js"
-api.use("/info", info.route)
+import utils from "./webapi/utils.js"
+api.use("/utils", utils.route)
 
 import auth from "./webapi/auth.js"
 api.use("/auth", auth.route)
