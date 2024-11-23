@@ -6,12 +6,40 @@ import { PermissionLevel as PL, InvolvementStatus as IS } from "../database/enum
 export class ProjectInvolvement extends SystemUnit
 {
     /*
+    Send invite notification
+    */
+    sendInvite ({ receiver, sender, project }) {
+        let { mailer, familiar } = this.infrastructure
+        
+        let senderUserName = sender.displayName? 
+            `${sender.displayName} (@${sender.userName})` : 
+            `User @${sender.userName}`
+        let receiverUserName = receiver.displayName?
+            `${receiver.displayName} (@${receiver.userName})` : 
+            `@${sender.userName}`
+
+        setTimeout(async ()=> await mailer.send({
+            sender: {
+                name: familiar.system.name,
+                email: familiar.system.email
+            },
+            recipient: {
+                email: receiver.email
+            },
+            subject: "Project invite",
+            text: `Hello there ${receiverUserName}.\n` +
+                `${senderUserName} invites you into a project.\n` +
+                `- project: ${project.title}\n` +
+                `- permission level: ${project.permission}\n` +
+                `${familiar.system.name} : : ${new Date().toISOString()}\n` 
+        }), 0)
+    }
+
+    /*
     Create project involvement
     */
     async create ({ projectInvolvement, project, sender, receiver, verified, autoAccept }, context) {
         let { database } = this.infrastructure
-
-        // console.log(projectInvolvement)
 
         if (!!projectInvolvement) {
             project ??= { id: projectInvolvement.projectId }
@@ -22,25 +50,29 @@ export class ProjectInvolvement extends SystemUnit
             }
         }
 
+        let theProject = null,
+            theReceiver = null,
+            theSender = null
+
         if (!verified) {
             // project should exist
-            let theProject = !!(project?.id) && await database.projectInfo.query().where({ id: project.id }).first()
+            theProject = !!(project?.id) && await database.projectInfo.query().where({ id: project.id }).first()
             if (!theProject) return { success: false, notFound: true, bad: "project" }
 
             // receiving user should exist
-            let theReceiver = !!(receiver?.id) && await database.user.query().where({ id: receiver.id }).first()
+            theReceiver = !!(receiver?.id) && await database.user.query().where({ id: receiver.id }).first()
             if (!theReceiver) return { success: false, notFound: true, bad: "receiver" }
 
             // sending user should exist and have "admin" permission in this project
-            let theSender = (sender?.id == context?.user?.id) && 
-                await database.projectInvolvement.query()
+            theSender = (sender?.id == context?.user?.id) && 
+                await database.projectInvolvement.query().withGraphJoined("receiver")
                 .where({ projectId: project.id, receiverId: sender.id }).first()
             let theSenderOk = theSender && (theSender.permission == PL.admin || theSender.permission == PL.owner)
             if (!theSenderOk) return { success: false, notAuthorized: true, bad: "sender" }
         }
 
         let existingInvolvement = await database.projectInvolvement.query()
-        .where({ projectId: project.id, receiverId: receiver.id }).first()
+            .where({ projectId: project.id, receiverId: receiver.id }).first()
 
         if (existingInvolvement) return { 
             success: false, exists: true, 
@@ -52,7 +84,7 @@ export class ProjectInvolvement extends SystemUnit
             projectId: project.id,
             receiverId: receiver.id,
             senderId: sender.id,
-            receiverStatus: autoAccept? IS.accepted : IS.none,
+            receiverStatus: autoAccept? IS.accepted : IS.invited,
             senderStatus: IS.invited,
             permission: PL[project.permission] ?? PL[receiver.permission] ?? PL.none,
             sentAt: now,
@@ -60,9 +92,18 @@ export class ProjectInvolvement extends SystemUnit
             interactedAt: autoAccept? now : null
         })
 
-        // TO DO:
         // if not autoaccept, system should send 
         // notification to receiver's email address.
+        if (!autoAccept) {
+            this.sendInvite({ 
+                receiver: theReceiver, 
+                sender: theSender.receiver, 
+                project: {
+                    title: theProject.title,
+                    permission: result.permission
+                }
+            })
+        }
 
         return {
             success: true,

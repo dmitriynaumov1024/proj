@@ -25,13 +25,30 @@ let mailer = createMailSender({
     logger: logger 
 })
 
+let familiar = {
+    promo: {
+        name: env.FAMILIAR_PROMO_NAME,
+        email: env.FAMILIAR_PROMO_EMAIL
+    },
+    system: {
+        name: env.FAMILIAR_SYSTEM_NAME,
+        email: env.FAMILIAR_SYSTEM_EMAIL
+    },
+    app: {
+        name: env.FAMILIAR_APP_NAME ?? "Proj"
+    },
+    name: env.FAMILIAR_NAME,
+    email: env.FAMILIAR_EMAIL
+}
+
 import { System } from "./system/system.js"
 let system = new System({
     services: {
         logger: ()=> logger,
         database: ()=> dbAdapter,
         cache: ()=> null,
-        mailer: ()=> mailer
+        mailer: ()=> mailer,
+        familiar: ()=> familiar
     }
 })
 

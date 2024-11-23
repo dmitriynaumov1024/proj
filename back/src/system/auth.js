@@ -85,19 +85,19 @@ export class Auth extends SystemUnit
     assume user = { email: String }, shortCode = String
     */
     sendShortCode ({ user, shortCode }) {
-        let { mailer } = this.infrastructure
+        let { mailer, familiar } = this.infrastructure
 
         setTimeout(async ()=> await mailer.send({ 
             sender: {
-                name: "Proj",
-                email: "noreply@example.com"
+                name: familiar.system.name,
+                email: familiar.system.email
             },
             recipient: {
                 email: user.email
             },
             subject: "Confirmation code",
-            text: `Your confirmation code for Proj is ${shortCode}.\n` + 
-                  `Proj : : ${new Date().toISOString()}\n`
+            text: `Your confirmation code for ${familiar.app.name} is ${shortCode}.\n` + 
+                  `${familiar.system.name} : : ${new Date().toISOString()}\n`
         }), 0)
     }
 
