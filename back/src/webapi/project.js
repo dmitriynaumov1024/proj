@@ -45,6 +45,13 @@ route.post("/foreign-list", defineHandler(async (context)=> {
     return result
 }))
 
+route.post("/delete", defineHandler(async (context)=> {
+    let { system, body } = context
+    let innerContext = { user: await system.auth.getUser({ session: body.session }) }
+    let result = await system.project.delete({ project: body.project }, innerContext)
+    return result
+}))
+
 route.post("/involvement/create", defineHandler(async (context)=> {
     let { system, body } = context
     let innerContext = {

@@ -275,6 +275,28 @@ export class Project extends SystemUnit
     /*
     Get list of own or related projects
     assume project = { ownerId?, ownerUserName?, receiverStatus?, page? }
+    assume client logged in
+    client does: 
+        sends POST ./project/own-list {
+            session { id, token },
+            project { ownerId?, ownerUserName?, receiverStatus?, page? }
+        }
+    server does: 
+        if (user not logged in):
+            return { success: false, notAuthorized: true }
+        let projects = get projects where
+            sender status is not "rejected"
+            and receiver id is user.id
+            and optional receiverStatus = project.receiverStatus 
+            and optional ownerId = project.ownerId
+                      or ownerUserName = project.ownerUserName
+            order by interactedAt descending
+            paginate.
+        return {
+            success: true,
+            projects: projects,
+            page: page
+        }
     */
     async getOwnList ({ project }, context) {
         project ??= { }
@@ -323,6 +345,23 @@ export class Project extends SystemUnit
     we don't expect ownerUserName here, because in client app 
     this usecase will only be reached from owner's profile page 
     that should already contain id.
+    client does: 
+        sends POST /project/foreign-list {
+            project { ownerId?, page? }
+        }
+    server does:
+        if (project.ownerId is null):
+            return { success: false, badRequest: true }
+        let projects = get projects where
+            ownerId = project.ownerId
+            and publicRead = true
+            order by createdAt descending
+            paginate.
+        return {
+            success: true,
+            projects: projects,
+            page: page
+        }
     */
     async getForeignList ({ project }, context) {
         let requestOk = project?.ownerId 
@@ -343,6 +382,51 @@ export class Project extends SystemUnit
             success: true,
             projects: projects,
             page: project.page
+        }
+    }
+
+    /*
+    Delete project
+    assume client logged in
+    assume project = { id }
+    client does:
+        sends POST ./project/delete {
+            session { id, token },
+            project { id }
+        }
+    server does:
+        let user = get from session
+        if (user is involved in the project as owner):
+            delete project
+            return { success: true, project: { id } }
+        else: 
+            return { success: false, notAuthorized: true }
+    */
+    async delete ({ project }, context) {
+        let requestOk = project?.id
+        if (!requestOk) return { success: false, badRequest: true }
+
+        let userOk = context?.user?.id
+        if (!userOk) return { success: false, notAuthorized: true }
+
+        let { database } = this.infrastructure
+
+        let involvement = await database.projectInvolvement.query()
+            .where("projectId", project.id)
+            .where("receiverId", context.user.id)
+            .first()
+
+        let allowed = involvement?.permission == PL.owner
+        if (!allowed) return { success: false, notAuthorized: true }
+
+        let deleted = await database.projectInfo.query()
+            .where("id", project.id).delete()
+
+        if (!deleted) return { success: false, notFound: true }
+
+        return {
+            success: true,
+            project: { id: project.id }
         }
     }
 }
