@@ -8,10 +8,15 @@ let router = createRouter({ routes })
 import {RouterView} from "vue-router"
 let MainAppTemplate = {
     render() {
-        return h(RouterView)
+        return h("div", { class: ["layer-0", "hfull", "w100"] }, [
+            h(RouterView)
+        ])
     }
 }
 
 let app = createApp(MainAppTemplate)
 app.use(router)
-app.mount(document.querySelector("#main-app"))
+app.mount(document.querySelector("#app"))
+
+// style
+import "./style/style.css"

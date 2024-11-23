@@ -1,9 +1,9 @@
 import { defineRoutes } from "../lib/router.js"
 
-import MainPage from "../pages/main.js"
-import ProjectPage from "../pages/project.js"
+import IndexPage from "../pages/index.js"
+import LoginPage from "../pages/login.js"
 
 export const routes = defineRoutes([
-    { path: "/", component: MainPage },
-    { path: "/project", component: ProjectPage }
+    { path: "/", component: IndexPage },
+    { path: "/login", component: LoginPage }
 ])
