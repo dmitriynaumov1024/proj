@@ -1,0 +1,22 @@
+{
+    "name": "proj-front",
+    "version": "0.0.1",
+    "private": true,
+    "scripts": {
+        "dev": "vite --port 5000 --host",
+        "build-prod": "vite build --mode prod",
+        "build-debug": "vite build --mode debug --minify false",
+        "dist": "rm -rf ../back/dist && cp -r ./dist ../back/dist"
+    },
+    "dependencies": {
+        "buffer": "^6.0.3",
+        "markdown-it": "^14.1.0",
+        "qs": "^6.11.2",
+        "vue": "^3.2.47",
+        "vue-router": "^4.1.6"
+    },
+    "devDependencies": {
+        "@vitejs/plugin-vue": "^3.0.3",
+        "vite": "^3.0.9"
+    }
+}
