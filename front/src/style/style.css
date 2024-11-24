@@ -91,18 +91,6 @@ div#app {
   .ws {
     width: 640px;
   }
-  /*div#app::before {
-    position: fixed;
-    left: 50%;
-    height: 100vh;
-    width: 720px;
-    transform: translateX(-50%);
-    content: " ";
-    z-index: -1;
-    pointer-events: none;
-    border-right: 2.5px solid rgba(128, 128, 129, 0.22);
-    border-left: 2.5px solid rgba(128, 128, 129, 0.22);
-  }*/
 }
 
 @media screen and (min-width: 1940px) {
@@ -356,6 +344,25 @@ input[invalid="true"], textarea[invalid="true"] {
   display: inline-block;
 }
 
+.project-card {
+  background-color: #f8f8f9;
+  width: 46%;
+  max-width: 70%;
+  flex-grow: 1;
+  flex-shrink: 1;
+}
+
+@media screen and (min-width: 728px) {
+  .project-card {
+    width: 30%;
+    max-width: 40%;
+  }
+}
+
+.project-card:hover {
+  box-shadow: 0 6px 16px rgba(10, 10, 10, 0.09);
+}
+
 .chat-card[expanded="true"],
 .user-card[expanded="true"] {
   background-color: rgba(128, 128, 128, 0.13);
@@ -372,77 +379,13 @@ input[invalid="true"], textarea[invalid="true"] {
   border: none;
 } 
 
-.chat-preview-dot {
-  background-color: #e03434;
-  width: 0.75em;
-  height: 0.75em;
-  overflow: hidden;
-  border-radius: 50%;
-  position: absolute;
-  right: 0.25em;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-.message-send-button {
-  background-color: #1161de;
-  border: none;
-  position: absolute;
-  z-index: 4;
-  bottom: 1.5rem;
-  right: 1rem;
-  border-radius: 1.2rem;
-  padding: 0.8rem 1.2rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.message-list-wrapper {
-  padding: 0 0 3rem;
-}
-
-.message-list {
-  position: relative;
-  height: 100%;
-  overflow-y: scroll;
-  padding: 0.5rem 0.5rem 2.5rem;
-}
-
-.message {
-  margin: 0.125em;
-  padding: 0.125em 0.75em;
-  background-color: #fefefe;
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.08);
-  border-radius: 0.75em;
-  border: 1px solid #e0e0e0;
-}
-
-.message[own="true"] {
-  border-bottom-right-radius: 0;
-  margin-left: 2em;
-}
-
-.message[own="false"] {
-  margin-right: 2em;
-  border-bottom-left-radius: 0;
-}
-
-.system-message {
-  margin: 0.25em 0;
-  text-align: center;
-  background-color: rgba(0, 0, 0, 0.06);
-  border-radius: 0;
-  padding: 0.25rem;
-}
-
-.day-message {
-  margin: 0.5em 0;
-  text-align: center;
-  padding: 0.25rem;
-}
-
 .flex-stripe {
   display: flex;
   flex-direction: row;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
 }
 
 .flex-pad-05 {

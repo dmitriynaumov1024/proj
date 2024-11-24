@@ -1,8 +1,9 @@
 import { h } from "vue"
 import { RouterLink } from "vue-router"
-
 import HeaderLayout from "../comp.layout/header.js"
 import FooterLayout from "../comp.layout/footer.js"
+
+import { idToColor } from "../lib/utils.js"
 
 function OwnUserView (self) {
     return [
@@ -26,11 +27,16 @@ function OwnUserView (self) {
 }
 
 function ProjectListView (self, projects) {
-    return projects.length? [
+    return projects.length? 
+    h("div", { class: ["flex-stripe", "flex-pad-05", "flex-wrap"] }, [
         projects.map(p=> {
-            return h("p", { class: ["mar-b-05"] }, p.project.title)
+            return h("div", { class: ["project-card"] }, [
+                h("div", { style: { height: "5em", "background-color": p.idColor } }),
+                h("p", { class: ["pad-05"] }, h("b", { }, p.project.title))
+            ])
         })
-    ] : h("p", { class: ["mar-b-05"] }, "No projects so far...")
+    ]) : 
+    h("p", { class: ["mar-b-05", "text-center"] }, "No projects so far...")
 }
 
 export default {
@@ -62,6 +68,7 @@ export default {
             let result = await this.$http.invoke("/project/own-list", { project: { receiverStatus: "accepted" } })
             if (result.success) {
                 this.projects = result.projects
+                for (let p of this.projects) p.idColor = await idToColor(p.projectId)
             }
             else {
                 this.errorMessage = "Something went wrong."
