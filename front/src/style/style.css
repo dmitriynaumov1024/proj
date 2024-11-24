@@ -308,6 +308,10 @@ textarea {
   border-radius: 0;
 }
 
+input[invalid="true"], textarea[invalid="true"] {
+  border-color: #e03434;
+}
+
 .stepperbox-wrapper>input {
   border-left: none;
   border-right: none;

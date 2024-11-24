@@ -20,3 +20,7 @@ export async function idToColor (id) {
 
     return `rgb(${red}, ${green}, ${blue})`
 }
+
+export function sleep (ms) {
+    return new Promise((resolve)=> setTimeout(()=> resolve(), ms))
+}

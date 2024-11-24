@@ -1,4 +1,4 @@
-export function HttpClient (apiBaseUrl, initSession) {
+export function createHttpClient (apiBaseUrl, initSession) {
     let session = initSession ?? { }
     let timediff = null
     let busy = { }
@@ -37,14 +37,16 @@ export function HttpClient (apiBaseUrl, initSession) {
             session = value
         },
         async hasValidSession() {
+            if (!this.timediff) await this.timesync()
+            if (session?.refreshAt > Date.now() + this.timediff) return true
             let result = session? await doPost("/auth/ping", { }) : { }
-            if (result.session?.id) {
-                console.log("session is valid!")
-                return true
-            }
+            if (result.session?.id) return true
+        },
+        async isLoggedIn() {
+            return await this.hasValidSession() 
         },
         async timesync () {
-            let result = await doPost("/time", { })
+            let result = await doPost("/utils/time", { })
             if (result.time) timediff = result.time - Date.now()
         },
         async beginAuth ({ userName }) {

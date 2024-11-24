@@ -5,6 +5,9 @@ import HeaderLayout from "../comp.layout/header.js"
 import FooterLayout from "../comp.layout/footer.js"
 
 export default {
+    props: {
+        path: String
+    },
     render() {
         return h("div", { class: ["ww", "h100", "scroll"] }, [
             h(HeaderLayout, { }, ()=> [
@@ -15,10 +18,9 @@ export default {
             ]),
             h("div", { class: ["bv", "hmin70"] }, [
                 h("div", { class: ["wc", "pad-1-05"] }, [
-                    h("p", { class: ["mar-b-1"] }, "Welcome to Proj!"),
-                    h("p", { class: ["mar-b-05"] }, h(RouterLink, { to: "/login" }, ()=> "Log in")),
-                    h("p", { class: ["mar-b-05"] }, h(RouterLink, { to: "/signup" }, ()=> "Sign up"))
-                ]),
+                    h("p", { class: ["mar-b-1"] }, "Error 404: Could not find /"+this.path),
+                    h("p", { }, h(RouterLink, { to: "/" }, ()=> "Go to main page"))
+                ])
             ]),
             h(FooterLayout)
         ])

@@ -1,4 +1,5 @@
 import { createWebHistory, createRouter as createVueRouter } from "vue-router"
+import { sleep } from "./utils.js"
 
 function DEFAULT_PROPS () {
     return { }
@@ -40,12 +41,12 @@ function createProps (props) {
 // because default mode is not sufficient any more  
 export function defineRoutes (...args) {
     let [ basePath, routes ] = (args.length >= 2) ? [ args[0], args[1] ] : [ "", args[0] ]
-    return routes.map (route => ({
-        name: route.name,
-        path: basePath + route.path,
-        component: route.component,
-        props: createProps(route.props)
-    }))
+    return routes.map (route => 
+        Object.assign({ }, route, {
+            path: basePath + route.path,
+            props: createProps(route.props)
+        })
+    )
 }
 
 // create router + add a patchQuery method
@@ -56,6 +57,17 @@ export function createRouter (options) {
         query = Object.assign({ }, query)
         query = Object.assign(query, newQuery)
         this.push({ path, query })
+    }
+    if (options.delay) {
+        router.beforeEach(async (to, from, next)=> {
+            if (from == "/" || !(from.path.length > 1)) {
+                next()
+            }
+            else {
+                await sleep(options.delay)
+                next()
+            }
+        })
     }
     return router
 }
