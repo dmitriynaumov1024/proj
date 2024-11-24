@@ -59,6 +59,17 @@ let server = createServer({
     cert: env.BACKEND_HTTPS_CERT
 })
 
+import { staticServer } from "better-express"
+
+let staticRootPath = "./dist"
+try {
+    server.http.use(staticServer("./dist", { maxAge: 60*1000 }))
+    logger.log("Using static server for " + staticRootPath)
+} 
+catch (error) {
+    logger.log("Failed to set up static server for " + staticRootPath)
+}
+
 import { crossOrigin } from "better-express"
 server.http.use(crossOrigin({ origins: "*" }))
 
@@ -90,7 +101,7 @@ api.use("/user", user.route)
 import project from "./webapi/project.js"
 api.use("/project", project.route)
 
-// fallback
+// api fallback
 api.use((request, response)=> {
     response.status(404).json({
         success: false,
@@ -98,6 +109,25 @@ api.use((request, response)=> {
         message: request.originalUrl+" not found"
     })
 })
+
+let indexHtml = null
+try {
+    let staticIndexPath = "./dist/index.html"
+    indexHtml = fs.readFileSync(staticIndexPath)
+    // static server fallback
+    server.http.use((request, response, next)=> {
+        if (request.method == "GET") {
+            response.status(200)
+            .append("Content-Type", "text/html")
+            .send(indexHtml)
+        }
+        else next()
+    })
+    logger.log("Using static fallback " + staticIndexPath)
+}
+catch (error) {
+    logger.log("Not using any static fallback")
+}
 
 import { errorCatcher } from "better-express"
 server.http.app.use(errorCatcher(()=> logger))
