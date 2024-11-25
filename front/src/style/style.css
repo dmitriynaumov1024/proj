@@ -344,23 +344,32 @@ input[invalid="true"], textarea[invalid="true"] {
   display: inline-block;
 }
 
+.project-card-grid.project-card-grid {
+  column-gap: 4px;
+  row-gap: 8px;
+}
+
 .project-card {
   background-color: #f8f8f9;
-  width: 46%;
-  max-width: 70%;
   flex-grow: 1;
   flex-shrink: 1;
+  flex-basis: 98%;
+  overflow-x: hidden;
 }
 
 @media screen and (min-width: 728px) {
   .project-card {
-    width: 30%;
-    max-width: 40%;
+    flex-basis: 46%;
   }
 }
 
-.project-card:hover {
+.project-card[disabled="true"] {
+  background-color: transparent;
+}
+
+.project-card:not([disabled="true"]):hover {
   box-shadow: 0 6px 16px rgba(10, 10, 10, 0.09);
+  cursor: pointer;
 }
 
 .chat-card[expanded="true"],
@@ -370,6 +379,7 @@ input[invalid="true"], textarea[invalid="true"] {
 
 .one-line {
   max-height: 1.8em;
+  max-width: 99%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

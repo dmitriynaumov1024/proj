@@ -1,9 +1,9 @@
 import { h } from "vue"
 import { RouterLink } from "vue-router"
-import HeaderLayout from "../comp.layout/header.js"
-import FooterLayout from "../comp.layout/footer.js"
+import HeaderLayout from "@/comp.layout/header.js"
+import FooterLayout from "@/comp.layout/footer.js"
 
-import { idToColor } from "../lib/utils.js"
+import { idToColor } from "@/lib/utils.js"
 
 function OwnUserView (self) {
     return [
@@ -27,14 +27,19 @@ function OwnUserView (self) {
 }
 
 function ProjectListView (self, projects) {
-    return projects.length? 
+    return (projects?.length > 0)? 
     h("div", { class: ["flex-stripe", "flex-pad-05", "flex-wrap"] }, [
-        projects.map(p=> {
-            return h("div", { class: ["project-card"] }, [
-                h("div", { style: { height: "5em", "background-color": p.idColor } }),
-                h("p", { class: ["pad-05"] }, h("b", { }, p.project.title))
+        projects.map(p=> h("div", { class: ["project-card"], onClick: ()=> self.$router.push("/project/info/"+p.project.id) }, [
+            h("svg", { style: { display: "block" }, viewBox: "0 0 10 4.5" }, [
+                h("rect", { x: 0, y: 0, width: 10, height: 4.5, stroke: "none", fill: p.idColor })
+            ]),
+            h("div", { class: ["pad-05"] }, [
+                h("p", { class: ["one-line"] }, h("b", { }, p.project.title)),
+                h("p", { }, h(RouterLink, { to: "/project/workspace/"+p.project.id }, "Open workspace >>")),
             ])
-        })
+        ])),
+        h("div", { class: ["project-card"], disabled: true }, " "),
+        h("div", { class: ["project-card"], disabled: true }, " "),
     ]) : 
     h("p", { class: ["mar-b-05", "text-center"] }, "No projects so far...")
 }
@@ -43,10 +48,9 @@ export default {
     data() {
         return {
             user: null,
+            projects: null,
             errorMessage: null,
             notAuthorized: false,
-
-            projects: null
         }
     },
     methods: {

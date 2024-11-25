@@ -1,7 +1,7 @@
 import { h } from "vue"
 
-import HeaderLayout from "../comp.layout/header.js"
-import FooterLayout from "../comp.layout/footer.js"
+import HeaderLayout from "@/comp.layout/header.js"
+import FooterLayout from "@/comp.layout/footer.js"
 
 let LoginStage = {
     begin: 0,

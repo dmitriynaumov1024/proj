@@ -1,8 +1,8 @@
 import { h } from "vue"
 import { RouterLink } from "vue-router"
 
-import HeaderLayout from "../comp.layout/header.js"
-import FooterLayout from "../comp.layout/footer.js"
+import HeaderLayout from "@/comp.layout/header.js"
+import FooterLayout from "@/comp.layout/footer.js"
 
 const SignupStage = {
     begin: 0,

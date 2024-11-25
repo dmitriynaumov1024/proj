@@ -1,8 +1,8 @@
 import { h } from "vue"
 import { RouterLink } from "vue-router"
 
-import HeaderLayout from "../comp.layout/header.js"
-import FooterLayout from "../comp.layout/footer.js"
+import HeaderLayout from "@/comp.layout/header.js"
+import FooterLayout from "@/comp.layout/footer.js"
 
 export default {
     render() {
@@ -15,7 +15,7 @@ export default {
             ]),
             h("div", { class: ["bv", "hmin70"] }, [
                 h("div", { class: ["wc", "pad-1-05"] }, [
-                    h("p", { class: ["mar-b-1"] }, "Welcome to Proj!"),
+                    h("h3", { class: ["mar-b-1"] }, "Welcome to Proj!"),
                     h("p", { class: ["mar-b-05"] }, h(RouterLink, { to: "/login" }, ()=> "Log in")),
                     h("p", { class: ["mar-b-05"] }, h(RouterLink, { to: "/signup" }, ()=> "Sign up"))
                 ]),
