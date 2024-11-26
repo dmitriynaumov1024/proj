@@ -34,4 +34,16 @@ route.post("/find", defineHandler(async (context)=> {
     return await system.user.find({ user: body.user }, { user: user })
 }))
 
+route.post("/find-by-username", defineHandler(async (context)=> {
+    let { system, body } = context
+    let innerContext = { user: await system.auth.getUser({ session: body.session }) }
+    return await system.user.findByUserName({ user: body.user }, innerContext)
+}))
+
+route.post("/in-project", defineHandler(async (context)=> {
+    let { system, body } = context
+    let user = await system.auth.getUser({ session: body.session })
+    return await system.user.getUsersInProject({ project: body.project }, { user: user })
+}))
+
 export default { route }

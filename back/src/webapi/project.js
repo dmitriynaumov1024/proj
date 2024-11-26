@@ -52,6 +52,18 @@ route.post("/delete", defineHandler(async (context)=> {
     return result
 }))
 
+route.post("/users/list", defineHandler(async (context)=> {
+    let { system, body } = context
+    let user = await system.auth.getUser({ session: body.session })
+    return await system.user.getUsersInProject({ project: body.project }, { user: user })
+}))
+
+route.post("/involvement/list", defineHandler(async (context)=> {
+    let { system, body } = context
+    let user = await system.auth.getUser({ session: body.session })
+    return await system.user.getUsersInProject({ project: body.project }, { user: user })
+}))
+
 route.post("/involvement/create", defineHandler(async (context)=> {
     let { system, body } = context
     let innerContext = {

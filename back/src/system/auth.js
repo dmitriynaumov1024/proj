@@ -2,7 +2,7 @@ import { SystemUnit } from "./__base.js"
 import { base32id, base10id } from "common/utils/id"
 import { hash } from "common/utils/hash"
 
-const sessionRefreshTime = 60*60*1000 // 1 hour
+const sessionRefreshTime = 20*60*1000 // 20 minutes
 const sessionExpireTime = 48*60*60*1000 // 48 hours
 
 const shortCodeLength = 6
@@ -13,10 +13,9 @@ export class Auth extends SystemUnit
 {
     constructor(options) {
         super(options)
-        this.intervals ??= [ ]
-        this.intervals.push(
-            setInterval(()=> this.removeExpiredSessions(), sessionCleanupIntervalTime)
-        )
+        setInterval(()=> this.events.emit("removeExpiredSessions"), sessionCleanupIntervalTime)
+        this.events.on("removeExpiredSessions", ()=> this.removeExpiredSessions())
+        this.events.on("sendShortCode", (event)=> this.sendShortCode(event))
     }
 
     async removeExpiredSessions () {
@@ -84,10 +83,10 @@ export class Auth extends SystemUnit
     /*
     assume user = { email: String }, shortCode = String
     */
-    sendShortCode ({ user, shortCode }) {
+    async sendShortCode ({ user, shortCode }) {
         let { mailer, familiar } = this.infrastructure
 
-        setTimeout(async ()=> await mailer.send({ 
+        await mailer.send({ 
             sender: {
                 name: familiar.system.name,
                 email: familiar.system.email
@@ -98,7 +97,7 @@ export class Auth extends SystemUnit
             subject: "Confirmation code",
             text: `Your confirmation code for ${familiar.app.name} is ${shortCode}.\n` + 
                   `${familiar.system.name} : : ${new Date().toISOString()}\n`
-        }), 0)
+        })
     }
 
     /*
@@ -146,7 +145,7 @@ export class Auth extends SystemUnit
             ["shortCode"]
 
         if (needsShortCode) {
-            this.sendShortCode({ user: theUser, shortCode: session.shortCode })
+            this.events.emit("sendShortCode", { user: theUser, shortCode: session.shortCode })
         }
 
         return {

@@ -1,3 +1,5 @@
+import { Buffer } from "node:buffer"
+
 // this creates a mailjet sender.
 export function mailjet (options = { }) {
     let encodedAuth = "Basic " + Buffer.from(`${options.apiKey}:${options.secretKey}`).toString("base64")
@@ -28,7 +30,7 @@ export function mailjet (options = { }) {
                     })
                 }) 
                 let body = await result.json()
-                logger?.log("send '"+subject+"' to "+recipient.email)
+                logger?.log("Send '"+subject+"' to "+recipient.email)
                 return body
             }
             catch(error) {

@@ -1,5 +1,5 @@
+import { EventEmitter } from "node:events"
 import { SystemUnit } from "./__base.js"
-
 import { Auth } from "./auth.js"
 import { User } from "./user.js"
 import { Project } from "./project.js"
@@ -9,7 +9,9 @@ export class System extends SystemUnit
 { 
     constructor (options) {
         super(options)
-        options = Object.assign({ }, options, { parent: this })
+        this.events = new EventEmitter()
+        options = Object.assign({ }, options)
+        options.props = Object.assign({ }, options.props, { parent: this, events: this.events })
         this.auth = new Auth(options)
         this.user = new User(options)
         this.project = new Project(options)

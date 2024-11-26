@@ -5,10 +5,16 @@ import { PermissionLevel as PL, InvolvementStatus as IS } from "../database/enum
 
 export class ProjectInvolvement extends SystemUnit
 {
+    constructor (options) {
+        super(options)
+        this.events.on("createInvolvement", (event)=> this.sendInvite(event))
+        this.events.on("updateInvolvement", (event)=> { /*ignore*/ })
+    }
+
     /*
     Send invite notification
     */
-    sendInvite ({ receiver, sender, project }) {
+    async sendInvite ({ receiver, sender, project }) {
         let { mailer, familiar } = this.infrastructure
         
         let senderUserName = sender.displayName? 
@@ -18,7 +24,7 @@ export class ProjectInvolvement extends SystemUnit
             `${receiver.displayName} (@${receiver.userName})` : 
             `@${sender.userName}`
 
-        setTimeout(async ()=> await mailer.send({
+        await mailer.send({
             sender: {
                 name: familiar.system.name,
                 email: familiar.system.email
@@ -32,7 +38,7 @@ export class ProjectInvolvement extends SystemUnit
                 `- project: ${project.title}\n` +
                 `- permission level: ${project.permission}\n` +
                 `${familiar.system.name} : : ${new Date().toISOString()}\n` 
-        }), 0)
+        })
     }
 
     /*
@@ -95,7 +101,7 @@ export class ProjectInvolvement extends SystemUnit
         // if not autoaccept, system should send 
         // notification to receiver's email address.
         if (!autoAccept) {
-            this.sendInvite({ 
+            this.events.emit("createInvolvement", { 
                 receiver: theReceiver, 
                 sender: theSender.receiver, 
                 project: {

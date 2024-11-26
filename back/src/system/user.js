@@ -1,5 +1,6 @@
 import { SystemUnit } from "./__base.js"
 import { User as UserModel } from "../database/models.js"
+import { PermissionLevel as PL, InvolvementStatus as IS } from "../database/enums.js"
 import { base32id } from "common/utils/id"
 import { filterFields } from "common/utils/object"
 import { hash } from "common/utils/hash"
@@ -216,6 +217,102 @@ export class User extends SystemUnit
                 displayName: theUser.displayName,
                 createdAt: theUser.createdAt
             }
+        }
+    }
+
+    /*
+    Find users by username or partial username
+    client does:
+        sends POST ./user/find-by-username {
+            user { userName }
+        }
+    server does:
+        let users = find users where userName like user.userName
+        order by length of userName ascending
+        limit 10 for unauthorized
+           or 50 for authorized users
+        if (found anything):
+            return { success: true, users: [...users] }
+        else:
+            return { success: false, notFound: true }
+    */
+    async findByUserName ({ user }, context) {
+        const resultSizeLimit = context?.user?.id ? 50 : 10
+        const { database } = this.infrastructure
+        
+        let requestOk = user?.userName?.length > 1
+        if (!requestOk) return { success: false, notFound: true, badRequest: true }
+
+        let result = await database.user.query()
+            .whereLike("userName", `%${user.userName}%`)
+            .orderByRaw("length(`userName`)")
+            .limit(resultSizeLimit)
+
+        if (!result.length) return { success: false, notFound: true }
+
+        return {
+            success: true,
+            users: result.map(u=> ({
+                id: u.id,
+                userName: u.userName,
+                displayName: u.displayName,
+                email: u.email
+            }))
+        }
+    }
+
+    /*
+    Get list of users in project.
+    assume client logged in 
+    user can see other users of the project 
+    if user is involved with permission != none 
+    client does: 
+        sends POST ./user/in-project {
+            project: { id, permission },
+            session
+        }
+    server does:
+        if (user not logged in):
+            return { success: false, notAuthorized: true }
+        else if (project not found by id):
+            return { success: false, notFound: true }
+        else if (user is not involved in project):
+            return { success: false, notAuthorized: true }
+        else:
+            return { success: true, project: { id }, users: [...users] }
+    */
+    async getUsersInProject ({ project }, context) {
+        let requestOk = !!(project?.id)
+        if (!requestOk) return { success: false, badRequest: true }
+
+        let userOk = context?.user?.id
+        if (!userOk) return { success: false, notAuthorized: true }
+
+        let { database } = this.infrastructure
+        let ownInvolvement = await database.projectInvolvement.query()
+            .where("receiverId", context.user.id)
+            .where("projectId", project.id)
+            .first()
+
+        if (!ownInvolvement) {
+            return { success: false, notFound: true }
+        }
+        if (!ownInvolvement.permission || ownInvolvement.permission == PL.none) {
+            return { success: false, notAuthorized: true }
+        }
+
+        let query = database.projectInvolvement.query()
+            .withGraphJoined("user")
+            .where("projectId", project.id)
+
+        if (project.permission) query = query.where("permission", project.permission)
+
+        let result = await query().orderBy("interactedAt", "desc", "last")
+
+        return {
+            success: true,
+            project: { id: project.id },
+            users: result.map(item=> Object.assign({ }, item, { user: filterFields(item.user, ["id", "userName", "email", "displayName"]) }))
         }
     }
 
