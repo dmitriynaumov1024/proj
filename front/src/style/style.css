@@ -50,6 +50,10 @@ div#app {
   overflow: auto;
 }
 
+.ww.h100 {
+  scrollbar-width: none;
+}
+
 /* The width. Units are ww (outer width container, resizable), wc (inner width cont., resizable), w100 (always 100% width), ws (small width) */
 .ww, .wc, .ws {
   margin-right: auto;

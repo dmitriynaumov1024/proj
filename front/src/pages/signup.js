@@ -94,20 +94,21 @@ export default {
         },
         onSubmit() {
             this.signup()
+        },
+        onGoToLogin() {
+            this.$router.replace("/login")
         }
     },
     render() {
+        const loc = this.$locale.current
         return h("div", { class: ["ww", "h100", "scroll"] }, [
             h(HeaderLayout, { }, ()=> [
-                h("h2", { }, [
-                    h("img", { class: ["icon-15"], src: "/icon/mascot.1.svg" }), " ",
-                    h("span", "Sign up")
-                ])
+                h("h2", { }, loc.action.signup)
             ]),
             h("div", { class: ["bv"] }, [
                 h("div", { class: ["wc", "pad-05"] }, [
                     "Have an account? ",
-                    h(RouterLink, { to: "/login" }, ()=> "Log in")
+                    h("a", { onClick: ()=> this.onGoToLogin() }, loc.action.login)
                 ])
             ]),
             h("div", { class: ["bv", "hmin70"] }, [

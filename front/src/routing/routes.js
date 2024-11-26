@@ -6,6 +6,7 @@ import IntroPage from "@/pages/intro.js"
 import LoginPage from "@/pages/login.js"
 import SignupPage from "@/pages/signup.js"
 import MyProfilePage from "@/pages/user/me.js"
+import UserListPage from "@/pages/user/list.js"
 import UserInfoPage from "@/pages/user/info.js"
 
 import ProjectListPage from "@/pages/project/list.js"
@@ -24,6 +25,7 @@ export const routes = defineRoutes([
     { path: "/signup", component: SignupPage },
     { path: "/register", component: SignupPage },
     { path: "/me", component: MyProfilePage },
+    { path: "/user/discover", component: UserListPage, props: { query: String } },
     { path: "/user/info/:userName", component: UserInfoPage, props: { userName: String } },
     // project pages
     { path: "/project/list", component: ProjectListPage, props: { page: Number } },

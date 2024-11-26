@@ -1,8 +1,8 @@
 import { h } from "vue"
 
 export default {
-    beforeMount() {
-        if (this.$http.hasValidSession) {
+    async beforeMount() {
+        if (await this.$http.hasValidSession()) {
             this.$router.replace("/me")
         }
         else {

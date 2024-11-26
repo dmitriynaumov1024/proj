@@ -4,24 +4,27 @@ import HeaderLayout from "@/comp.layout/header.js"
 import FooterLayout from "@/comp.layout/footer.js"
 
 import { idToColor } from "@/lib/utils.js"
+import { timestampToDayMonthYear, getTimeZone } from "@/lib/utils.js"
+const tz = getTimeZone()
 
 function OwnUserView (self) {
+    const loc = self.$locale.current
     return [
         h("div", { class: ["mar-b-1"] }, [
-            h("p", { class: ["color-gray"] }, "Username"),
+            h("p", { class: ["color-gray"] }, loc.user.userName),
             h("p", { }, self.user.userName),
         ]),
         h("div", { class: ["mar-b-1"] }, [
-            h("p", { class: ["color-gray"] }, "Email"),
+            h("p", { class: ["color-gray"] }, loc.user.email),
             h("p", { }, self.user.email),
         ]),
         h("div", { class: ["mar-b-1"] }, [
-            h("p", { class: ["color-gray"] }, "Display Name"),
+            h("p", { class: ["color-gray"] }, loc.user.displayName),
             h("p", { }, self.user.displayName),
         ]),
         h("div", { class: ["mar-b-1"] }, [
-            h("p", { class: ["color-gray"] }, "Signed up on"),
-            h("p", { }, self.user.createdAt),
+            h("p", { class: ["color-gray"] }, loc.user.createdAt),
+            h("p", { }, timestampToDayMonthYear(self.user.createdAt, tz, loc.month)),
         ]),
     ]
 }
@@ -35,7 +38,7 @@ function ProjectListView (self, projects) {
             ]),
             h("div", { class: ["pad-05"] }, [
                 h("p", { class: ["one-line"] }, h("b", { }, p.project.title)),
-                h("p", { }, h(RouterLink, { to: "/project/workspace/"+p.project.id }, "Open workspace >>")),
+                h("p", { }, h(RouterLink, { to: "/project/workspace/"+p.project.id }, ()=> "Open workspace >>")),
             ])
         ])),
         h("div", { class: ["project-card"], disabled: true }, " "),
@@ -71,8 +74,10 @@ export default {
         async getOwnProjectsList() {
             let result = await this.$http.invoke("/project/own-list", { project: { receiverStatus: "accepted" } })
             if (result.success) {
+                for (let p of result.projects) {
+                    p.idColor = await idToColor(p.projectId)
+                }
                 this.projects = result.projects
-                for (let p of this.projects) p.idColor = await idToColor(p.projectId)
             }
             else {
                 this.errorMessage = "Something went wrong."
@@ -83,17 +88,15 @@ export default {
         this.getOwnProfile()
     },
     render() {
+        let loc = this.$locale.current
         return h("div", { class: ["ww", "h100", "scroll"] }, [
             h(HeaderLayout, { }, ()=> [
-                h("h2", { }, [
-                    h("img", { class: ["icon-15"], src: "/icon/mascot.1.svg" }), " ",
-                    h("span", "Proj")
-                ])
+                h("h2", { class: ["clickable"], onClick: ()=> this.$router.push("/") }, loc.app.name)
             ]),
             h("div", { class: ["bv", "hmin70"] }, [
                 h("div", { class: ["bv"] }, [
                     h("div", { class: ["wc", "pad-1-05"] }, [
-                        h("h3", { class: ["mar-b-05"] }, "My profile"),
+                        h("h3", { class: ["mar-b-05"] }, loc.user.ownProfile),
                         this.user? 
                             OwnUserView(this) :
                         this.errorMessage? 
@@ -108,7 +111,7 @@ export default {
                 this.user && (this.projects instanceof Array)?
                 h("div", { class: ["bv"] }, [
                     h("div", { class: ["wc", "pad-1-05"] }, [
-                        h("h3", { class: ["mar-b-05"] }, "Projects"),
+                        h("h3", { class: ["mar-b-05"] }, loc.project.plural),
                         ProjectListView(this, this.projects)
                     ])
                 ]) : null

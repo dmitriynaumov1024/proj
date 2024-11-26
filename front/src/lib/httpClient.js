@@ -17,7 +17,7 @@ export function createHttpClient (apiBaseUrl, initSession) {
                 body: JSON.stringify(Object.assign({ }, params)) 
             })
             result = await result.json()
-            if (result.session) session = Object.assign({}, result.session)
+            if (result.session) Object.assign(session, result.session)
             return result 
         }
         catch (error) {

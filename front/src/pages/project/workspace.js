@@ -17,10 +17,7 @@ export default {
     render() {
         return h("div", { class: ["ww", "h100", "scroll"] }, [
             h(HeaderLayout, { }, ()=> [
-                h("h2", { }, [
-                    h("img", { class: ["icon-15"], src: "/icon/mascot.1.svg" }), " ",
-                    h("span", "Proj")
-                ])
+                h("h2", { class: ["clickable"], onClick: ()=> this.$router.push("/") }, loc.app.name)
             ]),
             h("div", { class: ["bv", "hmin70"] }, [
                 h("div", { class: ["bv"] }, [

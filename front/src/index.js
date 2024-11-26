@@ -30,6 +30,11 @@ import { createHttpClient } from "./lib/httpClient.js"
 let http = createHttpClient("/api", storage.session)
 app.use(installable("$http", http))
 
+// locales
+import { createLocales } from "./locale/index.js"
+let locale = createLocales()
+app.use(installable("$locale", locale))
+
 // evil css hack
 function setHeight () {
     document.body.style.setProperty("--height-full", window.innerHeight+"px")

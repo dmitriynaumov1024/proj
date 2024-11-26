@@ -167,17 +167,15 @@ export default {
         }
     },
     render() {
+        const loc = this.$locale.current
         return h("div", { class: ["ww", "h100", "scroll"] }, [
             h(HeaderLayout, { }, ()=> [
-                h("h2", { }, [
-                    h("img", { class: ["icon-15"], src: "/icon/mascot.1.svg" }), " ",
-                    h("span", "Log in")
-                ])
+                h("h2", { }, loc.action.login)
             ]),
             h("div", { class: ["bv"] }, [
                 h("div", { class: ["wc", "pad-05"] }, [
                     "First time? ",
-                    h("a", { onClick: ()=> this.onGoToSignup() }, "Sign up")
+                    h("a", { onClick: ()=> this.onGoToSignup() }, loc.action.signup)
                 ])
             ]),
             h("div", { class: ["bv", "hmin70"] }, [
