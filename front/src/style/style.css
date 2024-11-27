@@ -209,6 +209,10 @@ h2 {
   padding: 0.5rem;
 }
 
+.pad-05-0.pad-05-0 {
+  padding: 0.5rem 0;
+}
+
 .pad-1.pad-1 {
   padding: 1rem;
 }
@@ -374,6 +378,10 @@ input[invalid="true"], textarea[invalid="true"] {
 .project-card:not([disabled="true"]):hover {
   box-shadow: 0 6px 16px rgba(10, 10, 10, 0.09);
   cursor: pointer;
+}
+
+.user-card {
+  background-color: #f8f8f9;
 }
 
 .chat-card[expanded="true"],

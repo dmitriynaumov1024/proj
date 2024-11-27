@@ -19,6 +19,7 @@ function LocaleProxy (locale) {
 }
 
 let locales = {
+    c: LocaleProxy(c),
     en: LocaleProxy(nestedMerge(c, en))
 }
 

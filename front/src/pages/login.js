@@ -12,8 +12,9 @@ let LoginStage = {
 
 let loginStageViews = {
     [LoginStage.userName](self) {
+        const loc = self.$locale.current
         return [
-            h("p", { }, "Username"),
+            h("p", { }, loc.user.userName),
             h("input", { 
                 class: ["block", "mar-b-05"],
                 value: self.userName, 
@@ -25,21 +26,22 @@ let loginStageViews = {
             h("button", { 
                 class: ["block", "mar-b-05"], 
                 onClick: ()=> self.onSubmitUserName() 
-            }, self.errorMessage? "Try again" : "Proceed"),
+            }, self.errorMessage? loc.action.retry : loc.action.proceed),
         ]
     },
     [LoginStage.password](self) {
+        const loc = self.$locale.current
         return [
-            h("p", { }, "Username"),
+            h("p", { }, loc.user.userName),
             h("input", { 
                 class: ["block", "mar-b-05"],
                 readonly: true, value: self.userName
             }),
             h("p", { class: ["mar-b-05"] }, [
-                "Log in with another username? ", h("a", { onClick: ()=> self.onRetryUserName() }, "Start over")
+                loc.login.loginWithAnotherName, " ", h("a", { onClick: ()=> self.onRetryUserName() }, loc.login.startOver)
             ]),
             self.methods?.password? [
-                h("p", { }, "Password"),
+                h("p", { }, loc.user.password),
                 h("input", {
                     class: ["block", "mar-b-05"],
                     type: "password",
@@ -49,7 +51,7 @@ let loginStageViews = {
                 })
             ]: null,
             self.methods?.shortCode? [
-                h("p", { }, "Short code was sent to your email"),
+                h("p", { }, loc.login.shortCodeSent),
                 h("input", {
                     class: ["block", "mar-b-05"],
                     value: self.shortCode,
@@ -59,7 +61,7 @@ let loginStageViews = {
                 }),
                 self.canResendCode? [
                     h("p", { class: ["mar-b-05"] }, [
-                        "Did not receive code? ", h("a", { onClick: ()=> self.onRetryShortCode() }, "Send again")
+                        loc.login.notReceiveShortCode, " ", h("a", { onClick: ()=> self.onRetryShortCode() }, loc.login.sendAgain)
                     ])
                 ]: null
             ]: null,
@@ -67,12 +69,13 @@ let loginStageViews = {
             h("button", { 
                 class: ["block", "mar-b-05"], 
                 onClick: ()=> self.onSubmitPasswords() 
-            }, self.errorMessage? "Try again" : "Proceed"),
+            }, self.errorMessage? loc.action.retry : loc.action.proceed),
         ]
     },
-    [LoginStage.complete]() {
+    [LoginStage.complete](self) {
+        const loc = self.$locale.current
         return [
-            h("p", { }, "You successfully logged in. Wait for redirection.")
+            h("p", { }, loc.login.successfulLogin)
         ]
     }
 }
@@ -94,6 +97,7 @@ export default {
     },
     methods: {
         async beginAuth() {
+            const loc = this.$locale.current
             this.errorMessage = null
             this.badFields = { }
             this.shortCode = ""
@@ -112,15 +116,16 @@ export default {
                     for (let bf of result.bad) this.badFields[bf] = true
                 }
                 else {
-                    this.errorMessage = "Something went wrong."
+                    this.errorMessage = loc.error.other
                 }
             }
             catch(error) {
                 console.error(error)
-                this.errorMessage = "Something went wrong. Check console for details."
+                this.errorMessage = loc.error.other
             }
         },
         async completeAuth() {
+            const loc = this.$locale.current
             this.badFields = { }
             this.errorMessage = null
             try {
@@ -137,12 +142,12 @@ export default {
                     for (let bf of result.bad) this.badFields[bf] = true
                 }
                 else {
-                    this.errorMessage = "Something went wrong."
+                    this.errorMessage = loc.error.other
                 }
             }
             catch (error) {
                 console.error(error)
-                this.errorMessage = "Something went wrong. Check console for details."
+                this.errorMessage = loc.error.other
             }
         },
         onSubmitUserName() {
@@ -174,7 +179,7 @@ export default {
             ]),
             h("div", { class: ["bv"] }, [
                 h("div", { class: ["wc", "pad-05"] }, [
-                    "First time? ",
+                    loc.login.haveNoAccount, " ",
                     h("a", { onClick: ()=> this.onGoToSignup() }, loc.action.signup)
                 ])
             ]),

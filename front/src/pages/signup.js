@@ -11,9 +11,10 @@ const SignupStage = {
 
 const signupStageViews = {
     [SignupStage.begin](self) {
+        const loc = self.$locale.current
         return [
             h("div", { class: ["mar-b-1"] }, [
-                h("p", { }, "Your unique username - required"),
+                h("p", { }, loc.signup.userName),
                 h("input", { class: ["block"],
                     value: self.userName, 
                     onChange: (e)=> self.userName = e.target.value, 
@@ -22,7 +23,7 @@ const signupStageViews = {
                 }),
             ]),
             h("div", { class: ["mar-b-1"] }, [
-                h("p", { }, "Email address to send confirmation codes and system notifications - required"),
+                h("p", { }, loc.signup.email),
                 h("input", { class: ["block"],
                     value: self.email, 
                     onChange: (e)=> self.email = e.target.value, 
@@ -31,7 +32,7 @@ const signupStageViews = {
                 }),
             ]),
             h("div", { class: ["mar-b-1"] }, [
-                h("p", { }, "Display name: how to call you? - optional"),
+                h("p", { }, loc.signup.displayName),
                 h("input", { class: ["block"],
                     value: self.displayName, 
                     onChange: (e)=> self.displayName = e.target.value, 
@@ -44,14 +45,15 @@ const signupStageViews = {
             h("button", {
                 class: ["block"],
                 onClick: ()=> self.onSubmit(),
-            }, self.errorMessage? "Try again" : "Proceed")
+            }, self.errorMessage? loc.action.retry : loc.action.proceed)
         ]
     },
     [SignupStage.complete](self) {
+        const loc = self.$locale.current
         return [
-            h("p", { class: ["mar-b-05"] }, "You have successfully signed up."),
-            h("p", { class: ["mar-b-1"] }, `Now you can log in with username = ${self.userName}.`),
-            h("p", { }, h(RouterLink, { to: "/login" }, ()=> "Go to Log in page"))
+            h("p", { class: ["mar-b-05"] }, loc.signup.successfulSignup),
+            h("p", { class: ["mar-b-1"] }, loc.signup.nowLogin(self.userName)),
+            h("p", { }, h(RouterLink, { to: "/login" }, ()=> loc.signup.goToLogin))
         ]
     }
 }
@@ -71,6 +73,7 @@ export default {
     },
     methods: {
         async signup() {
+            const loc = this.$locale.current
             this.badFields = { }
             this.errorMessage = null
             let result = await this.$http.invoke("/user/create", {
@@ -81,15 +84,15 @@ export default {
             }
             else if (result.exists == "userName") {
                 this.badFields.userName = true
-                this.errorMessage = `Unfortunately, username ${this.userName} is already taken.` 
+                this.errorMessage = loc.error.usernameExists 
             }
             else if (result.bad) {
                 if (!(result.bad instanceof Array)) result.bad = [result.bad]
                 for (let bf of result.bad) this.badFields[bf] = true
-                this.errorMessage = `Some fields (${result.bad.join(', ')}) contain inappropriate values.`
+                this.errorMessage = loc.error.badFields(result.bad)
             }
             else {
-                this.errorMessage = "Something went wrong. Check console for details."
+                this.errorMessage = loc.error.other
             }
         },
         onSubmit() {
@@ -107,7 +110,7 @@ export default {
             ]),
             h("div", { class: ["bv"] }, [
                 h("div", { class: ["wc", "pad-05"] }, [
-                    "Have an account? ",
+                    loc.signup.haveAccount, " ",
                     h("a", { onClick: ()=> this.onGoToLogin() }, loc.action.login)
                 ])
             ]),

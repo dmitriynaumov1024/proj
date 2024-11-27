@@ -13,7 +13,7 @@ export default {
             ]),
             h("div", { class: ["bv", "hmin70"] }, [
                 h("div", { class: ["wc", "pad-1-05"] }, [
-                    h("h3", { class: ["mar-b-1"] }, "Welcome to Proj!"),
+                    h("h3", { class: ["mar-b-1"] }, loc.welcome.header),
                     h("p", { class: ["mar-b-05"] }, h(RouterLink, { to: "/user/discover" }, ()=> loc.user.discover)),
                     h("p", { class: ["mar-b-05"] }, h(RouterLink, { to: "/login" }, ()=> loc.action.login)),
                     h("p", { class: ["mar-b-05"] }, h(RouterLink, { to: "/signup" }, ()=> loc.action.signup))
