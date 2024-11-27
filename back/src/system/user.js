@@ -302,17 +302,17 @@ export class User extends SystemUnit
         }
 
         let query = database.projectInvolvement.query()
-            .withGraphJoined("user")
+            .withGraphJoined("receiver")
             .where("projectId", project.id)
 
         if (project.permission) query = query.where("permission", project.permission)
 
-        let result = await query().orderBy("interactedAt", "desc", "last")
+        let result = await query.orderBy("interactedAt", "desc", "last")
 
         return {
             success: true,
             project: { id: project.id },
-            users: result.map(item=> Object.assign({ }, item, { user: filterFields(item.user, ["id", "userName", "email", "displayName"]) }))
+            users: result.map(item=> Object.assign({ }, item, { receiver: 1, user: filterFields(item.receiver, ["id", "userName", "email", "displayName"]) }))
         }
     }
 
