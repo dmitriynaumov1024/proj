@@ -15,27 +15,25 @@ export default {
         }
     },
     render() {
-        return h("div", { class: ["ww", "h100", "scroll"] }, [
-            h(HeaderLayout, { }, ()=> [
-                h("h2", { class: ["clickable"], onClick: ()=> this.$router.push("/") }, loc.app.name)
+        const loc = this.$locale.current
+        return h("div", { class: ["h100", "flex-v"] }, [
+            h(HeaderLayout, { hless: true, wfull: true }, ()=> [
+                h("h2", { class: ["clickable"] }, loc.workspace.self)
             ]),
-            h("div", { class: ["bv", "hmin70"] }, [
-                h("div", { class: ["bv"] }, [
-                    h("div", { class: ["wc", "pad-1-05"] }, [
-                        h("h3", { class: ["mar-b-05"] }, `Project #${this.id}`),
-                        this.project? 
-                            null :
-                        this.errorMessage? 
-                            h("p", { class: ["color-bad"] }, this.errorMessage) : 
-                            h("p", { }, "Loading, please wait..."),
-                        this.notAuthorized? [
-                            h("p", { }, h(RouterLink, { to: "/login" }, ()=> "Log in")),
-                            h("p", { }, h(RouterLink, { to: "/signup" }, ()=> "Sign up")),
-                        ] : null
-                    ]),
-                ])
+            h("div", { class: ["bv", "flex-grow", "scroll"] }, [
+                h("div", { class: ["pad-05"] }, [
+                    this.project? 
+                        null :
+                    this.errorMessage? 
+                        h("p", { class: ["color-bad"] }, this.errorMessage) : 
+                        h("p", { }, loc.common.loading),
+                    this.notAuthorized? [
+                        h("p", { }, h(RouterLink, { to: "/login" }, ()=> loc.action.login)),
+                        h("p", { }, h(RouterLink, { to: "/signup" }, ()=> loc.action.signup)),
+                    ] : null
+                ]),
             ]),
-            h(FooterLayout)
+            h(FooterLayout, { style: {"flex-shrink": 0}, hless: true, wfull: true })
         ])
     }
 }

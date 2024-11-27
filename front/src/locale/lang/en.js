@@ -78,14 +78,19 @@ export default {
         invitedAt: "Invited on",
         acceptedAt: "Accepted on",
         interactedAt: "Interacted on",
+        addUser: "Add user",
+        goToWorkspace: "Go to workspace",
         permission: {
             self: "Permission level",
             none: "None",
-            read: "Read",
+            view: "View",
             comment: "Comment",
             edit: "Edit",
             admin: "Admin",
             owner: "Owner"
         }
+    },
+    workspace: {
+        self: "Project workspace"
     }
 }

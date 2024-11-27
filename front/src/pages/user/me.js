@@ -30,6 +30,7 @@ function OwnUserView (self) {
 }
 
 function ProjectListView (self, projects) {
+    let loc = self.$locale.current
     return (projects?.length > 0)? 
     h("div", { class: ["flex-stripe", "flex-pad-05", "flex-wrap"] }, [
         projects.map(p=> h("div", { class: ["project-card"], onClick: ()=> self.$router.push("/project/info/"+p.project.id) }, [
@@ -38,13 +39,13 @@ function ProjectListView (self, projects) {
             ]),
             h("div", { class: ["pad-05"] }, [
                 h("p", { class: ["one-line"] }, h("b", { }, p.project.title)),
-                h("p", { }, h(RouterLink, { to: "/project/workspace/"+p.project.id }, ()=> "Open workspace >>")),
+                h("p", { }, h(RouterLink, { to: "/project/workspace/"+p.project.id, target: "_blank" }, ()=> loc.project.goToWorkspace+" >>")),
             ])
         ])),
         h("div", { class: ["project-card"], disabled: true }, " "),
         h("div", { class: ["project-card"], disabled: true }, " "),
     ]) : 
-    h("p", { class: ["mar-b-05", "text-center"] }, "No projects so far...")
+    h("p", { class: ["mar-b-05", "text-center"] }, loc.project.nothing)
 }
 
 export default {
@@ -65,10 +66,10 @@ export default {
             }
             else if (result.notAuthorized) {
                 this.notAuthorized = true
-                this.errorMessage = "You are not logged in."
+                this.errorMessage = this.$locale.current.error.notAuthorized
             }
             else {
-                this.errorMessage = "Something went wrong."
+                this.errorMessage = this.$locale.current.error.other
             }
         },
         async getOwnProjectsList() {
@@ -80,7 +81,7 @@ export default {
                 this.projects = result.projects
             }
             else {
-                this.errorMessage = "Something went wrong."
+                this.errorMessage = this.$locale.current.error.other
             }
         }
     },
@@ -101,10 +102,10 @@ export default {
                             OwnUserView(this) :
                         this.errorMessage? 
                             h("p", { class: ["color-bad"] }, this.errorMessage) : 
-                            h("p", { }, "Loading, please wait..."),
+                            h("p", { }, loc.common.loading),
                         this.notAuthorized? [
-                            h("p", { }, h(RouterLink, { to: "/login" }, ()=> "Log in")),
-                            h("p", { }, h(RouterLink, { to: "/signup" }, ()=> "Sign up")),
+                            h("p", { }, h(RouterLink, { to: "/login" }, ()=> loc.action.login)),
+                            h("p", { }, h(RouterLink, { to: "/signup" }, ()=> loc.action.signup)),
                         ] : null
                     ]),
                 ]),
