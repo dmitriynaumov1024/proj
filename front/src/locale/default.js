@@ -21,6 +21,7 @@ export default {
         update: "action.update",
         save: "action.save",
         reset: "action.reset",
+        logout: "action.logout",
         login: "action.login",
         signup: "action.signup",
         create: "action.create",
@@ -66,6 +67,10 @@ export default {
         shortCodeSent: "login.shortCodeSent",
         notReceiveShortCode: "login.notReceiveShortCode",
         successfulLogin: "login.successfulLogin",
+    },
+    logout: {
+        header: "logout.header",
+        confirmation: "logout.confirmation",
     },
     project: {
         self: "project.self",

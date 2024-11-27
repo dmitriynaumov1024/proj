@@ -35,10 +35,13 @@ function ProjectInfoView(self) {
         ]),
         // users involved in the project
         (self.users instanceof Array)? h("div", { class: ["bv", "pad-05-0"] }, [
-            h("h2", { class: ["mar-b-05"] }, loc.user.plural),
-            canAddUsers?
-            h("button", { class: ["mar-b-05", "block"], 
-                onClick: ()=> self.onBeginAddUser() }, `+ ${loc.project.addUser}`) : null,
+            h("div", { class: ["flex-stripe", "mar-b-05"] }, [
+                h("h2", { class: ["flex-grow"] }, loc.user.plural),
+                canAddUsers? 
+                    h("button", { class: ["pad-025-05"], 
+                    onClick: ()=> self.onBeginAddUser() }, `+ ${loc.project.addUser}`) : 
+                    null,
+            ]),
             self.users.map(u=> h("div", { class:["mar-b-05", "user-card", "flex-stripe", "flex-pad-05"] }, [
                 h("div", { style: { "background-color": u.idColor, "width": "2.5rem", "flex-shrink": 0, "text-align": "center", "color": "white" } }, h("h2", { }, u.user.userName[0]?.toUpperCase())), 
                 h("div", { class: ["flex-grow"] }, [

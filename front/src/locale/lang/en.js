@@ -21,6 +21,7 @@ export default {
         update: "Update",
         save: "Save",
         reset: "Reset",
+        logout: "Log out",
         login: "Log in",
         signup: "Sign up",
         create: "Create",
@@ -66,6 +67,10 @@ export default {
         shortCodeSent: "Short code was sent to your email",
         notReceiveShortCode: "Did not receive code?",
         successfulLogin: "You successfully logged in. Wait for redirection.",
+    },
+    logout: {
+        header: "Log out",
+        confirmation: "Do you really wish to log out?",
     },
     project: {
         self: "Project",
