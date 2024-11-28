@@ -406,6 +406,10 @@ input[invalid="true"], textarea[invalid="true"] {
   flex-direction: row;
 }
 
+.flex-center {
+  align-items: center;
+}
+
 .flex-wrap {
   flex-wrap: wrap;
 }

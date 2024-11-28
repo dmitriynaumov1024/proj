@@ -2,6 +2,7 @@ export function createHttpClient (apiBaseUrl, initSession) {
     let session = initSession ?? { }
     let timediff = null
     let busy = { }
+    let sessionChangeCallbacks = [ ]
 
     async function doPost(topic, params) {
         if (busy[topic]) {
@@ -17,7 +18,12 @@ export function createHttpClient (apiBaseUrl, initSession) {
                 body: JSON.stringify(Object.assign({ }, params)) 
             })
             result = await result.json()
-            if (result.session) Object.assign(session, result.session)
+            if (result.session) {
+                Object.assign(session, result.session)
+                sessionChangeCallbacks.forEach(cb=> {
+                    if (cb instanceof Function) cb(session)
+                })
+            }
             return result 
         }
         catch (error) {
@@ -35,6 +41,9 @@ export function createHttpClient (apiBaseUrl, initSession) {
         },
         set session(value) {
             session = value
+        },
+        onSessionChange(callback) {
+            sessionChangeCallbacks.push(callback)
         },
         async hasValidSession() {
             if (!this.timediff) await this.timesync()

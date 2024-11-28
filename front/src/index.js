@@ -10,7 +10,7 @@ let app = createApp({
 
 // storage
 import { installable } from "./lib/installable.js"
-import { createStorage, createTempStorage } from "./lib/storage.js"
+import { createStorage, createTempStorage, persistStorage } from "./lib/storage.js"
 let storage = createStorage("proj.storage", {
     beforeUnload() { this.session = app.config.globalProperties.$http.session }
 })
@@ -28,6 +28,10 @@ app.use(router)
 // http client
 import { createHttpClient } from "./lib/httpClient.js"
 let http = createHttpClient("/api", storage.session)
+http.onSessionChange(newValue => {
+    storage.session = newValue
+    persistStorage("proj.storage", storage)
+})
 app.use(installable("$http", http))
 
 // locales
@@ -50,3 +54,4 @@ app.mount(document.querySelector("#app"))
 
 // style
 import "./style/style.css"
+import "./style/wsp.css"
