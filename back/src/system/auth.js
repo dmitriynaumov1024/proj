@@ -74,6 +74,10 @@ export class Auth extends SystemUnit
         let tokenOk = session.token == theSession.token || 
                       session.token == theSession.tokenOld
         if (!tokenOk) {
+            console.log(session.token)
+            console.log(theSession.token)
+            console.log(theSession.tokenOld)
+            console.log("ses token bad")
             return false
         }
 

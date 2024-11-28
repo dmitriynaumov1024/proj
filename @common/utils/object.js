@@ -39,3 +39,8 @@ export function nestedClone (source) {
     return nestedAssign ({ }, source)
 }
 
+export function makeEnum (array) {
+    let result = Object.create(null)
+    for (let key of array) result[key] = key
+    return Object.freeze(result)
+}

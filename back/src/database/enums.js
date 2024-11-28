@@ -1,19 +1,33 @@
-export const PermissionLevel = Object.assign(Object.create(null), {
-    none: "none",
-    view: "view",
-    comment: "comment",
-    edit: "edit",
-    admin: "admin",
-    owner: "owner",
-})
+import { makeEnum } from "common/utils/object"
 
 export const PermissionLevelOrder = [
     "none", "view", "comment", "edit", "admin", "owner"
 ]
 
-export const InvolvementStatus = Object.assign(Object.create(null), {
-    none: "none",
-    invited: "invited",
-    accepted: "accepted",
-    rejected: "rejected"
-})
+export const PermissionLevel = makeEnum (
+    PermissionLevelOrder
+)
+
+export const InvolvementStatus = makeEnum ([
+    "none", "invited", "accepted", "rejected"
+])
+
+export const FundamentalTaskStatus = makeEnum ([
+    "unknown", "todo", "working", "finished", "rejected"
+])
+
+export const TaskObjectFieldTypes = makeEnum ([
+    "boolean", "integer", "number", "string", "enum", "timestamp"
+])
+
+export const TaskObjectTypes = makeEnum ([
+    "Task", "Milestone", "TaskSet", "TaskTemplate"
+])
+
+export const TaskObjectPermissionLevelOrder = [
+    null, "view", "comment", "edit"
+]
+
+export const TaskObjectPermissionLevel = makeEnum (
+    TaskObjectPermissionLevelOrder
+)

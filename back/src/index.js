@@ -45,12 +45,14 @@ let sockets = {
     connections: [ ]
 }
 
+let cache = { }
+
 import { System } from "./system/system.js"
 let system = new System({
     services: {
         logger: ()=> logger,
         database: ()=> dbAdapter,
-        cache: ()=> null,
+        cache: ()=> cache,
         mailer: ()=> mailer,
         familiar: ()=> familiar,
         sockets: ()=> sockets
