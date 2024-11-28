@@ -4,6 +4,7 @@ import { Auth } from "./auth.js"
 import { User } from "./user.js"
 import { Project } from "./project.js"
 import { ProjectInvolvement } from "./projectInvolvement.js"
+import { ProjectWorkspace } from "./projectWorkspace.js"
 
 export class System extends SystemUnit 
 { 
@@ -16,5 +17,6 @@ export class System extends SystemUnit
         this.user = new User(options)
         this.project = new Project(options)
         this.projectInvolvement = new ProjectInvolvement(options)
+        this.projectWorkspace = new ProjectWorkspace(options)
     }
 }

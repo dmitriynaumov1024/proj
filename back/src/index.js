@@ -41,6 +41,10 @@ let familiar = {
     email: env.FAMILIAR_EMAIL
 }
 
+let sockets = {
+    connections: [ ]
+}
+
 import { System } from "./system/system.js"
 let system = new System({
     services: {
@@ -48,16 +52,21 @@ let system = new System({
         database: ()=> dbAdapter,
         cache: ()=> null,
         mailer: ()=> mailer,
-        familiar: ()=> familiar
+        familiar: ()=> familiar,
+        sockets: ()=> sockets
     }
 })
 
 import { createServer } from "better-express"
 let server = createServer({
+    websocket: true,
     https: env.BACKEND_HTTPS=="true",
     key: env.BACKEND_HTTPS_KEY,
     cert: env.BACKEND_HTTPS_CERT
 })
+
+sockets.server = server.socket
+system.events.emit("attachSockets", null)
 
 import { staticServer } from "better-express"
 
