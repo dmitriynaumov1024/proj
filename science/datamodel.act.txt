@@ -106,9 +106,11 @@
 --- project.involvement.invite
   + senderStatus = "invited"
   + receiverStatus = "none"
+  + permission = request.project.permission
 --- project.involvement.kick
   + senderStatus = "rejected"
   + receiverStatus = "none"
+  + permission = request.project.permission
 
 [6][1:N] Plugin
 --- fields

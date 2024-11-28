@@ -196,3 +196,91 @@ server does:
             success: true, 
             user: { id, email, displayName, userName, createdAt } 
         }
+
+10. Create project
+assume client logged in
+client does:
+    sends POST ./project/create {
+        session { id, token },
+        project { title? }
+    }
+server does:
+    if (session not valid):
+        return { success: false, notAuthorized: true }
+    else if (user can not create project):
+        return { success: false, forbidden: true }
+    else:
+        return {
+            success: true,
+            project: { id }
+        }
+
+11. Update project
+assume client logged in
+client does: 
+    sends POST ./project/update {
+        session { id, token },
+        project { id, title, publicRead, publicClone }
+    }
+server does:
+    if (session not valid):
+        return { success: false, notAuthorized: true }
+    else if (project not found):
+        return { success: false, notAuthorized: true }
+    else if (user can not update project):
+        return { success: false, forbidden: true }
+    else:
+        return {
+            success: true,
+            project: { id }
+        }
+
+12. Find one project by id
+client optionally logged in
+client does: 
+    sends POST ./project/find {
+        session? { id, token },
+        project { id }
+    }
+server does:
+    let project = get project by id
+    if (project is null):
+        return { success: false, notFound: true }
+    let allowed = false
+    if (project is publicRead): allowed = true
+    else:
+        let user = get user by session
+        if (user is project owner): allowed = true
+        else if (exists project involvement where user is receiver) 
+        and (permission >= read): allowed = true
+    if (allowed): 
+        return { success: true, project: project, involvement?: involvement }
+    else:
+        return { success: false, notAuthorized: true }
+
+13. Clone project by id
+assume client is logged in
+client does: 
+    sends POST ./project/clone {
+        session? { id, token },
+        project { id }
+    }
+server does:
+    let user = get user by session
+    if (user is null):
+        return { success: false, notAuthorized: true }
+    let project = get project by id
+    if (project is null):
+        return { success: false, notFound: true }
+    let allowed = false
+    if (project is publicRead and publicClone): allowed = true
+    else:
+        if (user is project owner): allowed = true
+        else if (exists project involvement where user is receiver) 
+        and (permission >= read): allowed = true
+    if (allowed): 
+        create copy of the project
+        return { success: true, project: { id } }
+    else:
+        return { success: false, notAuthorized: true }
+
