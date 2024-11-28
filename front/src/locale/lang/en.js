@@ -26,6 +26,7 @@ export default {
         signup: "Sign up",
         create: "Create",
         search: "Search",
+        delete: "Delete",
     },
     user: {
         self: "User",
@@ -85,6 +86,7 @@ export default {
         interactedAt: "Interacted on",
         addUser: "Add user",
         goToWorkspace: "Go to workspace",
+        confirmDelete: "Do you really wish to delete this project? This action can not be undone.",
         permission: {
             self: "Permission level",
             none: "None",

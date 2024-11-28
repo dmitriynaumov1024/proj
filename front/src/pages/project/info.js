@@ -13,8 +13,9 @@ const PLs = ["none", "view", "comment", "edit", "admin", "owner"]
 
 function ProjectInfoView(self) {
     const loc = self.$locale.current
-    const canAddUsers = self.involvement?.permission == "admin"
+    const canManage = self.involvement?.permission == "admin"
                      || self.involvement?.permission == "owner"
+    const canDelete = self.involvement?.receiverId == self.project?.ownerId
     const canSeeWorkspace = self.involvement?.permission != "none"
     return (self.project instanceof Object)? [
         // project info
@@ -31,13 +32,16 @@ function ProjectInfoView(self) {
                 h("p", { class: ["mar-b-05"] }, `${loc.project.permission.self}: ${loc.project.permission[self.involvement.permission]}`),
                 canSeeWorkspace?
                 h("p", { class: ["mar-b-05"] }, h(RouterLink, { to: "/project/workspace/"+self.id, target: "_blank" }, ()=>loc.project.goToWorkspace+" >>")) : null
-            ] : null
+            ] : null,
+            // delete project
+            canDelete?
+            h("a", { class:["color-bad"], onClick: ()=> self.onBeginDeleteProject() }, `${loc.action.delete} ${loc.project.self}`) : null
         ]),
         // users involved in the project
         (self.users instanceof Array)? h("div", { class: ["bv", "pad-05-0"] }, [
             h("div", { class: ["flex-stripe", "mar-b-05"] }, [
                 h("h2", { class: ["flex-grow"] }, loc.user.plural),
-                canAddUsers? 
+                canManage? 
                     h("button", { class: ["pad-025-05"], 
                     onClick: ()=> self.onBeginAddUser() }, `+ ${loc.project.addUser}`) : 
                     null,
@@ -81,6 +85,20 @@ function AddingUserModal(self) {
     ])
 }
 
+function DeletingProjectModal(self) {
+    const loc = self.$locale.current
+    return h(Modal, { titleText: `${loc.action.delete} ${loc.project.self}`, 
+        onClickOutside: ()=> self.onCompleteDeleteProject(false) }, ()=> [
+        h("div", { class: ["mar-b-1"] }, [
+            h("p", { }, loc.project.confirmDelete),
+        ]),
+        h("div", { class: ["flex-stripe", "flex-pad-05"] }, [
+            h("button", { class: ["flex-grow"], onClick: ()=> self.onCompleteDeleteProject(false) }, loc.action.cancel),
+            h("button", { class: ["flex-grow", "color-bad"], onClick: ()=> self.onCompleteDeleteProject(true) }, h("b", { }, loc.action.delete))
+        ])
+    ])
+}
+
 
 export default {
     props: {
@@ -94,8 +112,8 @@ export default {
             users: null,
             errorMessage: null,
             notAuthorized: null,
-
             addingUser: null,
+            deletingProject: false,
         }
     },
     watch: {
@@ -170,12 +188,28 @@ export default {
                 this.addingUser.bad = true
             }
         },
+        async deleteProject() {
+            let result = await this.$http.invoke("/project/delete", {
+                project: { id: this.id }
+            })
+            this.deletingProject = false
+            if (result.success) {
+                this.$router.push("/")
+            }
+        },
         onBeginAddUser() {
             this.addingUser = { }
         },
         onCompleteAddUser(confirm) {
             if (confirm) this.addUserToProject()
             else this.addingUser = null 
+        },
+        onBeginDeleteProject() {
+            this.deletingProject = true
+        },
+        onCompleteDeleteProject(confirm) {
+            if (confirm) this.deleteProject()
+            else this.deletingProject = false
         }
     },
     render() {
@@ -198,7 +232,9 @@ export default {
                             h("p", { }, h(RouterLink, { to: "/signup" }, ()=> loc.action.signup)),
                         ] : null,
                         this.addingUser?
-                            AddingUserModal(this) : null
+                            AddingUserModal(this) : null,
+                        this.deletingProject?
+                            DeletingProjectModal(this) : null
                     ]),
                 ])
             ]),

@@ -40,7 +40,7 @@ function ProjectListView (self, projects) {
             ]),
             h("div", { class: ["pad-05"] }, [
                 h("p", { class: ["one-line"] }, h("b", { }, p.project.title)),
-                h("p", { }, h(RouterLink, { to: "/project/workspace/"+p.project.id, target: "_blank" }, ()=> loc.project.goToWorkspace+" >>")),
+                h("p", { }, h("a", { href: "/project/workspace/"+p.project.id, target: "_blank", onClick: (e)=> e.stopPropagation() }, loc.project.goToWorkspace+" >>")),
             ])
         ])),
         h("div", { class: ["project-card"], disabled: true }, " "),
