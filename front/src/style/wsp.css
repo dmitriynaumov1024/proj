@@ -17,18 +17,28 @@ body {
 
 @media screen and (max-width: 727px) {
   .wsp-menu {
+    position: absolute;
+    top: 0; left: 0;
+    z-index: 10;
+    display: none;
+    background-color: #fefefe;
+    box-shadow: 40px 0 250px rgba(128, 128, 129, 0.3);
+  }
+  .wsp-menu[expand="true"] {
+    display: block;
     height: 100%;
     overflow-x: hidden;
     overflow-y: scroll;
-    max-width: 75px;
+    width: 200px;
+    max-width: 240px;
     border-right: 2px solid rgba(128, 128, 128, 0.2);
-  }
-  .wsp-menu .text {
-    display: none;
   }
 }
 
 @media screen and (min-width: 728px) {
+  [role="wsp-menu-handle"] {
+    display: none;
+  }
   .wsp-menu {
     display: block;
     height: 100%;

@@ -243,7 +243,7 @@ h2 {
   cursor: pointer;
 }
 
-.clickable:hover {
+.clickable:hover, .clickable[active="true"] {
   background-color: rgba(128, 128, 128, 0.1);
 }
 

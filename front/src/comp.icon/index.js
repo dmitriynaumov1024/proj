@@ -16,6 +16,7 @@ export { default as TaskIcon } from "./task.js"
 export { default as TaskListIcon } from "./taskList.js"
 export { default as TaskProtoIcon } from "./taskProto.js"
 export { default as TaskSetIcon } from "./taskSet.js"
+export { default as MenuHandleIcon } from "./menuHandle.js"
 
 export { default as CartesianSwordIcon } from "./cartesianSword.js"
 export { default as ChevronIcon } from "./chevron.js"

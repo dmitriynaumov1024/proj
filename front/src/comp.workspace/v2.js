@@ -1,4 +1,4 @@
-import { h, createApp } from "vue"
+import { h, createApp, markRaw as m } from "vue"
 import { installable } from "@/lib/installable.js"
 import { RouterLink } from "vue-router"
 import HeaderLayout from "@/comp.layout/header.js"
@@ -6,12 +6,45 @@ import FooterLayout from "@/comp.layout/footer.wsp.js"
 
 import { createSocket } from "@/lib/socket.js"
 import { createTempStorage } from "@/lib/storage.js"
+import { nestedAssign } from "common/utils/object"
 
 import * as ico from "@/comp.icon/index.js"
 import Menu from "./ctrl/menu.js"
 
+import pages from "./pages/index.js"
+
 const defaultRoute = "index"
 const notFoundRoute = "notFound"
+
+const WorkspaceAppMenu = [
+    {
+        name: "View",
+        items: [
+            { name: "Task list", icon: m(ico.TaskListIcon), route: "tasklist" },
+            { name: "Task board", icon: m(ico.TaskBoardIcon), route: "taskboard" }
+        ]
+    },
+    {
+        name: "Collaboration",
+        items: [
+            { name: "Users", icon: m(ico.PersonIcon), route: "users" },
+            { name: "Groups", icon: m(ico.PersonIcon), route: "groups" }
+        ]
+    },
+    {
+        name: "Settings",
+        items: [
+            { name: "Project settings", icon: m(ico.Gear6Icon), route: "settings" }
+        ]
+    }
+]
+
+const WorkspaceAppPages = {
+    [defaultRoute]: m(pages.default),
+    [notFoundRoute]: m(pages.notfound),
+    users: m(pages.users),
+    settings: m(pages.settings),
+}
 
 const WorkspaceAppTemplate = {
     data() {
@@ -21,6 +54,8 @@ const WorkspaceAppTemplate = {
                 error: true,
                 message: null
             },
+            activeMenuItem: null,
+            expandMenu: false,
             route: defaultRoute,
             query: { }
         }
@@ -53,46 +88,21 @@ const WorkspaceAppTemplate = {
         setupApp() {
             let app = this.$app
             // set up app menu
-            app.menu = [
-                {
-                    name: "View",
-                    items: [
-                        { name: "Task list", icon: ico.TaskListIcon },
-                        { name: "Task board", icon: ico.TaskBoardIcon }
-                    ]
-                },
-                {
-                    name: "Settings",
-                    items: [
-                        { name: "Project settings", icon: ico.Gear6Icon }
-                    ]
-                }
-            ]
+            app.menu = WorkspaceAppMenu
             // set up app pages
-            app.pages = {
-                [defaultRoute]: ({ parent })=> {
-                    let self = parent
-                    return h("div", { class: ["pad-025"] }, [
-                        h("h3", { class: ["mar-b-05"] }, "Index page"),
-                        h("p", h("a", { onClick: ()=> self.navigate("some not existent route") }, "Go to some not existent route >>")),
-                    ])
-                },
-                [notFoundRoute]: ({ parent })=> {
-                    let self = parent
-                    let loc = self.$locale.current 
-                    return h("div", { class: ["pad-025"] }, [
-                        h("h3", { class: ["mar-b-05"] }, "Error"),
-                        h("p", { }, loc.error.notFound),
-                        h("p", h("a", { onClick: ()=> self.navigate(defaultRoute) }, "<< Back to index page"))
-                    ])
-                }
-            }
+            app.pages = Object.assign({ }, WorkspaceAppPages)
             app.ready = true
         },
         async connectToProject() {
             await this.$socket.ready()
             this.$socket.on("Project.Data", (data)=> {
                 this.$storage.project = data
+            })
+            this.$socket.on("Project.DataPatch", (data)=> {
+                nestedAssign(this.$storage.project, data)
+            })
+            this.$socket.on("User.Data", (data)=> {
+                this.$storage.user = data.user
             })
             this.$socket.send("Connect", { 
                 session: this.$http.session,
@@ -102,6 +112,11 @@ const WorkspaceAppTemplate = {
         navigate (route, query) {
             this.route = route
             this.query = query?? { }
+        },
+        onMenuClick (item) {
+            this.activeMenuItem = item
+            this.route = item?.route
+            this.query = item?.query?? { }
         }
     },
     render() {
@@ -111,13 +126,16 @@ const WorkspaceAppTemplate = {
         const app = this.$app
         return h("div", { class: ["h100", "flex-v"] }, [
             h(HeaderLayout, { hless: true, wfull: true, style: {"flex-shrink": 0} }, ()=> [
-                h("h2", { class: ["clickable"], onClick: ()=> this.beginRenameProject() }, project?.title ?? loc.workspace.self)
+                h("div", { class: ["clickable"], active: this.expandMenu, role: "wsp-menu-handle", onClick: ()=> this.expandMenu = !this.expandMenu }, [
+                    h(ico.MenuHandleIcon, { class: ["icon-20"] })
+                ]),
+                h("h2", { }, project?.title ?? loc.workspace.self)
             ]),
             h("div", { class: ["bv", "flex-grow", "scroll"] }, [
                 connection.ok?
                 h("div", { class: ["flex-stripe", "h100"] }, [
                     app.ready? [
-                        h(Menu, { items: app.menu }),
+                        h(Menu, { expand: this.expandMenu, items: app.menu, activeItem: (item)=> (this.route == item.route), onClick: (item)=> this.onMenuClick(item) }),
                         h("div", { class: ["wsp-main", "pad-05"] }, [
                             h(app.pages[this.route]?? app.pages[notFoundRoute], { parent: this })
                         ])
