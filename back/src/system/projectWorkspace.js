@@ -154,6 +154,31 @@ export class ProjectWorkspace extends SystemUnit
         })
     }
 
+    /*
+    update project info like title and description.
+    assume request project = { title, description }
+    */
+    async onWspUpdateProjectInfo ({ project }, context) {
+        let pl = context.data?.permission
+        let canUpdateInfo = pl == PL.admin || pl == PL.owner
+        if (!canUpdateInfo) context.send("Action.Forbidden", { })
+
+        let { cache, sockets } = this.services
+        let theProject = cache.project.get(context.data.project.id)
+        if (!theProject) context.send("Action.BadRequest", { })
+
+        theProject.changedAt = Date.now()
+        if (Object.hasOwn(project, "title")) theProject.title = project.title
+        if (Object.hasOwn(project, "description")) theProject.project.data.description = project.description
+
+        this.broadcastForProject(theProject.id, "Project.DataPatch", {
+            title: theProject.title,
+            data: {
+                description: theProject.project.data.description
+            }
+        })
+    }
+
     async onSystemSyncProjectUsers ({ project }) {
         let { logger, cache, database, sockets } = this.services
         let theProject = cache.project.get(project.id)
@@ -172,19 +197,26 @@ export class ProjectWorkspace extends SystemUnit
         }]))
 
         theProject.project.data.users = Object.fromEntries(users)
+        theProject.changedAt = Date.now()
 
-        sockets.connections.forEach(con=> {
-            if (con.data.project.id != theProject.id) return
-            logger.debug("sending sync to connected user @"+ con.data.user.userName)
-            con.send("Project.DataPatch", {
-                data: {
-                    users: {
-                        $rewrite: true,
-                        ...theProject.project.data.users
-                    }
+        this.broadcastForProject(theProject.id, "Project.DataPatch", {
+            data: {
+                users: {
+                    $rewrite: true,
+                    ...theProject.project.data.users
                 }
-            })
+            }
         })
+    }
+
+    broadcastForProject (projectId, type, data) {
+        if (!projectId) return
+        setTimeout(()=> {
+            this.services.sockets.connections.forEach(con=> {
+                if (con.data.project?.id != projectId) return
+                con.send(type, data)
+            })
+        }, 0)
     }
 
     onSystemCreateInvolvement ({ project }) {
