@@ -187,6 +187,16 @@ export class ProjectWorkspace extends SystemUnit
         })
     }
 
+    onSystemCreateInvolvement ({ project }) {
+        // re-emit event
+        this.events.emit("system:SyncProjectUsers", { project })
+    }
+
+    onSystemUpdateInvolvement ({ project }) {
+        // re-emit event
+        this.events.emit("system:SyncProjectUsers", { project })
+    }
+
     onWspTypelessMessage (data) {
         let { logger } = this.infrastructure
         logger.debug("wsp: typeless message")
