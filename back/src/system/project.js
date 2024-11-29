@@ -424,6 +424,10 @@ export class Project extends SystemUnit
 
         if (!deleted) return { success: false, notFound: true }
 
+        this.events.emit("system:DeleteProject", {
+            project: { id: project.id }
+        })
+
         return {
             success: true,
             project: { id: project.id }

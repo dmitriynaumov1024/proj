@@ -7,8 +7,8 @@ export class ProjectInvolvement extends SystemUnit
 {
     constructor (options) {
         super(options)
-        this.events.on("createInvolvement", (event)=> this.sendInvite(event))
-        this.events.on("updateInvolvement", (event)=> { /*ignore*/ })
+        this.events.on("system:CreateInvolvement", (event)=> this.sendInvite(event))
+        this.events.on("system:UpdateInvolvement", (event)=> { /*ignore*/ })
     }
 
     /*
@@ -101,13 +101,15 @@ export class ProjectInvolvement extends SystemUnit
         // if not autoaccept, system should send 
         // notification to receiver's email address.
         if (!autoAccept) {
-            this.events.emit("createInvolvement", { 
+            this.events.emit("system:CreateInvolvement", { 
                 receiver: theReceiver, 
                 sender: theSender.receiver, 
                 project: {
+                    id: theProject.id,
                     title: theProject.title,
                     permission: result.permission
-                }
+                },
+                permission: result.permission
             })
         }
 
@@ -170,6 +172,12 @@ export class ProjectInvolvement extends SystemUnit
         await database.projectInvolvement.query()
             .where({ projectId: project.id, receiverId: receiver.id })
             .patch(newInvolvement) 
+
+        this.events.emit("system:UpdateInvolvement", {
+            project: { id: project.id },
+            receiver: { id: theReceiver.id, userName: theReceiver.userName },
+            permission: newInvolvement.permission
+        })
 
         return {
             success: true,
@@ -274,6 +282,12 @@ export class ProjectInvolvement extends SystemUnit
             .where("projectId", projectInvolvement.projectId)
             .where("receiverId", projectInvolvement.receiverId)
             .patch(newInvolvement)
+
+        this.events.emit("system:UpdateInvolvement", {
+            project: { id: projectInvolvement.projectId },
+            receiver: { id: projectInvolvement.receiverId },
+            permission: newInvolvement.permission
+        })
 
         return {
             success: true,

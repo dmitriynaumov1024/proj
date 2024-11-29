@@ -13,18 +13,35 @@ export class ProjectWorkspace extends SystemUnit
         super(options)
         this.services.cache.project ??= new Map()
         this.events.on("attachSockets", ()=> this.configureSockets())
+        this.registerWspHandlers()
+        this.registerSystemHandlers()
     }
 
     configureSockets () {
-        let { logger, sockets } = this.infrastructure
+        let { logger, sockets } = this.services
         logger.log("Using sockets")
         sockets.server.on("connection", (connection)=> this.onRawConnect(connection))
+    }
+
+    registerWspHandlers () {
+        let { logger, sockets } = this.services
         const wspHandlerPrefix = "onWsp"
+        const wspEventPrefix = "wsp:"
         let handlerNames = Object.getOwnPropertyNames(this.constructor.prototype)
                                  .filter(name=> name.startsWith(wspHandlerPrefix))
         for (let name of handlerNames) {
             logger.debug("wsp: using handler " + name)
-            this.events.on("wsp:"+name.slice(wspHandlerPrefix.length), (...args)=> this[name](...args))
+            this.events.on(wspEventPrefix+name.slice(wspHandlerPrefix.length), (...args)=> this[name](...args))
+        }
+    }
+
+    registerSystemHandlers () {
+        const systemHandlerPrefix = "onSystem"
+        const systemEventPrefix = "system:"
+        let handlerNames = Object.getOwnPropertyNames(this.constructor.prototype)
+                                 .filter(name=> name.startsWith(systemHandlerPrefix))
+        for (let name of handlerNames) {
+            this.events.on(systemEventPrefix+name.slice(systemHandlerPrefix.length), (...args)=> this[name](...args))
         }
     }
 
@@ -34,7 +51,7 @@ export class ProjectWorkspace extends SystemUnit
     onRawConnect (connection) {
         let { sockets, logger } = this.infrastructure
         logger.log("wsp: new connection")
-        sockets.connections ??= [ ]
+        sockets.connections ??= new Map()
         let wrapper = ({ 
             id: base32id(20),
             raw: connection,
@@ -47,10 +64,11 @@ export class ProjectWorkspace extends SystemUnit
                 }))
             }
         })
-        sockets.connections.push(wrapper)
+        sockets.connections.set(wrapper.id, wrapper)
         connection.on("close", ()=> {
             logger.log("wsp: someone disconnected")
             this.events.emit("wsConnectionClosed", wrapper)
+            sockets.connections.delete(wrapper.id)
         })
         connection.on("message", (data)=> {
             let parsedMessage = this.parseWsMessage(data, wrapper)
@@ -104,6 +122,7 @@ export class ProjectWorkspace extends SystemUnit
                 return context.send("Connect.NotFound", { project })
             }
             cache.project.set(project.id, theProject)
+            this.events.emit("system:SyncProjectUsers", { project: { id: theProject.id } })
         }
 
         // get project involvement
@@ -113,20 +132,58 @@ export class ProjectWorkspace extends SystemUnit
                 .where("receiverId", user.id)
                 .first()
             if (!context.data.involvement && theProject.publicRead) {
-                context.data.involvement = { permission: PL.view }
+                context.data.involvement = { projectId: theProject.id, permission: PL.view }
             }
         }
         if (!context.data.involvement || context.data.involvement.permission == PL.none) {
             return context.send("Connect.Forbidden", { })
         }
 
-        context.send("Connect.Ok", { user })
+        context.data.project = { id: theProject.id }
+
+        context.send("Connect.Ok", { })
+
+        context.send("User.Data", { user })
+
         return context.send("Project.Data", {
             id: theProject.id,
             title: theProject.title,
             data: theProject.project.data,
             plugins: theProject.project.plugins,
             // we don't send history here
+        })
+    }
+
+    async onSystemSyncProjectUsers ({ project }) {
+        let { logger, cache, database, sockets } = this.services
+        let theProject = cache.project.get(project.id)
+        if (!theProject) return
+        
+        let involvements = await database.projectInvolvement.query()
+            .withGraphJoined("receiver")
+            .where("projectId", project.id)
+    
+        let users = involvements.map(u=> ([u.receiver.id, {
+            id: u.receiver.id,
+            userName: u.receiver.userName,
+            displayName: u.receiver.displayName,
+            email: u.receiver.email,
+            permission: u.permission
+        }]))
+
+        theProject.project.data.users = Object.fromEntries(users)
+
+        sockets.connections.forEach(con=> {
+            if (con.data.project.id != theProject.id) return
+            logger.debug("sending sync to connected user @"+ con.data.user.userName)
+            con.send("Project.DataPatch", {
+                data: {
+                    users: {
+                        $rewrite: true,
+                        ...theProject.project.data.users
+                    }
+                }
+            })
         })
     }
 
@@ -143,12 +200,6 @@ export class ProjectWorkspace extends SystemUnit
     onWspPing (data, context) {
         let { logger } = this.infrastructure
         context.send("Pong", "pong!")
-        logger.log("wsp: someone pinged")
     }
 
-    onWspEchoPlease (data, context) {
-        let { logger } = this.infrastructure
-        context.send("Echo", data)
-        logger.log("wsp: echo")
-    }
 }

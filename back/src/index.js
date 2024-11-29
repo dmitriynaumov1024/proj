@@ -42,7 +42,7 @@ let familiar = {
 }
 
 let sockets = {
-    connections: [ ]
+    connections: null
 }
 
 let cache = { }

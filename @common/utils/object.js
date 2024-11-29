@@ -9,7 +9,7 @@ export function filterFields (object, fields) {
 function _nestedAssign (target, source) {
     if (source instanceof Object) for (const key in source) {
         const val = source[key]
-        if ((val instanceof Function) || (val instanceof Date) || !(val instanceof Object)) {
+        if ((val instanceof Function) || (val instanceof Date) || !(val instanceof Object) || val?.$rewrite || val?.$overwrite) {
             target[key] = val
         }
         else {
