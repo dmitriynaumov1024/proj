@@ -218,6 +218,7 @@ export class ProjectInfo extends Model
 [4][1:1] Project
 --- fields
   + id: String PK FK(ProjectInfo) delete cascade
+  + version: Number
   + data: ProjectData/String # json encoded 
   + history: ProjectHistory/String # json encoded
   + plugins: PluginVersion[]/String # json encoded
@@ -229,6 +230,10 @@ export class Project extends Model
             id: {
                 type: type.String,
                 rules: [ pk(), fk(ProjectInfo), cascade() ]
+            },
+            version: {
+                type: type.Integer,
+                rules: [ ]
             },
             data: {
                 type: type.Object,

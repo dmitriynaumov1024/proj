@@ -3,24 +3,19 @@ import { base32id, base16id } from "common/utils/id"
 import { filterFields } from "common/utils/object"
 import { PermissionLevel as PL, InvolvementStatus as IS } from "../database/enums.js"
 
-function sendObject (connection, obj) {
-    connection.send(JSON.stringify(obj))
-}
-
 export class ProjectWorkspace extends SystemUnit 
 {
     constructor (options) {
         super(options)
-        this.services.cache.project ??= new Map()
-        this.events.on("attachSockets", ()=> this.configureSockets())
+        this.initCache()
         this.registerWspHandlers()
         this.registerSystemHandlers()
+        this.scheduleSocketConfiguration()
+        this.schedulePersistProjects()
     }
 
-    configureSockets () {
-        let { logger, sockets } = this.services
-        logger.log("Using sockets")
-        sockets.server.on("connection", (connection)=> this.onRawConnect(connection))
+    initCache () {
+        this.services.cache.project ??= new Map()
     }
 
     registerWspHandlers () {
@@ -43,6 +38,21 @@ export class ProjectWorkspace extends SystemUnit
         for (let name of handlerNames) {
             this.events.on(systemEventPrefix+name.slice(systemHandlerPrefix.length), (...args)=> this[name](...args))
         }
+    }
+
+    schedulePersistProjects () {
+        const projectPersistIntervalMs = 5000 
+        setTimeout(()=> this.events.emit("system:PersistProjects"), projectPersistIntervalMs)
+    }
+
+    scheduleSocketConfiguration () {
+        this.events.on("attachSockets", ()=> this.configureSockets())
+    }
+
+    configureSockets () {
+        let { logger, sockets } = this.services
+        logger.log("Using sockets")
+        sockets.server.on("connection", (connection)=> this.onRawConnect(connection))
     }
 
     /*
@@ -89,6 +99,20 @@ export class ProjectWorkspace extends SystemUnit
         catch (error) {
             return { type: "BadMessage", data: data }
         }
+    }
+
+    /*
+    convenient method to send message to 
+    every client connected to the project workspace
+    */
+    broadcastForProject (projectId, type, data) {
+        if (!projectId) return
+        setTimeout(()=> {
+            this.services.sockets.connections.forEach(con=> {
+                if (con.data.project?.id != projectId) return
+                con.send(type, data)
+            })
+        }, 0)
     }
 
     /*
@@ -209,16 +233,6 @@ export class ProjectWorkspace extends SystemUnit
         })
     }
 
-    broadcastForProject (projectId, type, data) {
-        if (!projectId) return
-        setTimeout(()=> {
-            this.services.sockets.connections.forEach(con=> {
-                if (con.data.project?.id != projectId) return
-                con.send(type, data)
-            })
-        }, 0)
-    }
-
     onSystemCreateInvolvement ({ project }) {
         // re-emit event
         this.events.emit("system:SyncProjectUsers", { project })
@@ -227,6 +241,26 @@ export class ProjectWorkspace extends SystemUnit
     onSystemUpdateInvolvement ({ project }) {
         // re-emit event
         this.events.emit("system:SyncProjectUsers", { project })
+    }
+
+    async onSystemPersistProjects () {
+        let { cache, database, logger } = this.services
+        let count = 0
+        for (let [key, project] of cache.project.entries()) {
+            let projectChangedAt = project.changedAt?? 0,
+                projectPersistedAt = project.persistedAt?? 0
+            if (projectChangedAt > projectPersistedAt) {
+                await database.projectInfo.query().where("id", project.id)
+                    .patch(filterFields(project, ["title", "publicRead", "publicClone"]))
+                await database.project.query().where("id", project.id)
+                    .patch(project.project) 
+                if (project.changedAt > Date.now()) project.changedAt = Date.now() - 1
+                project.persistedAt = Date.now()
+                count++
+            }
+        }
+        if (count > 0) logger.log(`Persisted ${count} projects`)
+        this.schedulePersistProjects()
     }
 
     onWspTypelessMessage (data) {
