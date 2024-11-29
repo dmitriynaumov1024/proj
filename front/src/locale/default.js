@@ -80,6 +80,7 @@ export default {
         title: "project.title",
         owner: "project.owner",
         description: "project.description",
+        noDescription: "project.noDescription",
         createdAt: "project.createdAt",
         invitedAt: "project.invitedAt",
         acceptedAt: "project.acceptedAt",

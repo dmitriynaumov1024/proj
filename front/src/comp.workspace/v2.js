@@ -9,7 +9,7 @@ import { createTempStorage } from "@/lib/storage.js"
 import { nestedAssign } from "common/utils/object"
 
 import * as ico from "@/comp.icon/index.js"
-import Menu from "./ctrl/menu.js"
+import Menu from "./comp/menu.js"
 
 import pages from "./pages/index.js"
 

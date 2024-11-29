@@ -55,3 +55,4 @@ app.mount(document.querySelector("#app"))
 // style
 import "./style/style.css"
 import "./style/wsp.css"
+import "./style/md.css"

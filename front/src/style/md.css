@@ -1,0 +1,11 @@
+.md em, .md i {
+  font-style: italic;
+}
+
+.md strong, .md b {
+  font-weight: bold;
+}
+
+.md p, .md h1, .md h2, .md h3, .md section, .md ol, .md ul {
+  margin-bottom: 0.5rem;
+}

@@ -1,9 +1,19 @@
 import { h } from "vue"
+import Markdown from "../comp/markdown.js"
 
 export default ({ parent })=> {
     let self = parent
-    return h("div", { class: ["pad-025"] }, [
-        h("h3", { class: ["mar-b-05"] }, "Index page"),
-        h("p", h("a", { onClick: ()=> self.navigate("some not existent route") }, "Go to some not existent route >>")),
+    let loc = self.$locale.current
+    let project = self.$storage.project
+    return (project instanceof Object)?
+    h("div", { class: ["pad-025"] }, [
+        h("h3", { class: ["mar-b-05"] }, loc.project.description),
+        h("div", { }, project.data.description?
+            h(Markdown, { text: project.data.description }) :
+            h("p", { class: ["color-gray"] }, loc.project.noDescription)
+        ),
+    ]) : 
+    h("div", { class: ["pad-025"] }, [
+        h("p", { }, loc.common.loading)
     ])
 }

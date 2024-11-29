@@ -80,6 +80,7 @@ export default {
         title: "Title",
         owner: "Owner",
         description: "Description",
+        noDescription: "No description so far.",
         createdAt: "Created on",
         invitedAt: "Invited on",
         acceptedAt: "Accepted on",
