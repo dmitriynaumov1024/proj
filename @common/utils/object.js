@@ -9,8 +9,13 @@ export function filterFields (object, fields) {
 function _nestedAssign (target, source) {
     if (source instanceof Object) for (const key in source) {
         const val = source[key]
-        if ((val instanceof Function) || (val instanceof Date) || !(val instanceof Object) || val?.$rewrite || val?.$overwrite) {
+        if ((val instanceof Function) || (val instanceof Date) || !(val instanceof Object)) {
             target[key] = val
+        }
+        else if (val?.$rewrite || val?.$overwrite) {
+            target[key] = nestedClone(val)
+            delete target[key].$rewrite
+            delete target[key].$overwrite
         }
         else {
             if (!(target[key] instanceof Object)) target[key] = { }

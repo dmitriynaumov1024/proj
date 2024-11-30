@@ -4,7 +4,8 @@
         "./utils/id": "./utils/id.js",
         "./utils/id2": "./utils/id.js",
         "./utils/object": "./utils/object.js",
-        "./utils/hash": "./utils/hash.js"
+        "./utils/hash": "./utils/hash.js",
+        "./wsp/enums": "./wsp/enums.js"
     },
     "peerDependencies": {
         "buffer": "6.x"

@@ -1,6 +1,6 @@
 import { SystemUnit } from "./__base.js"
 import { base32id, base16id } from "common/utils/id"
-import { filterFields } from "common/utils/object"
+import { filterFields, nestedClone } from "common/utils/object"
 import { PermissionLevel as PL, InvolvementStatus as IS } from "../database/enums.js"
 
 export class ProjectWorkspace extends SystemUnit 
@@ -201,6 +201,30 @@ export class ProjectWorkspace extends SystemUnit
                 description: theProject.project.data.description
             }
         })
+    }
+
+    async onWspUpdateProjectTaskStatuses ({ taskStatuses }, context) {
+        let pl = context.data?.permission
+        let canUpdateInfo = pl == PL.admin || pl == PL.owner
+        if (!canUpdateInfo) context.send("Action.Forbidden", { })
+
+        let { cache, sockets } = this.services
+        let theProject = cache.project.get(context.data.project.id)
+        if (!theProject) context.send("Action.BadRequest", { })
+
+        theProject.project.data.taskStatuses = nestedClone(taskStatuses)
+        theProject.changedAt = Date.now()
+
+        this.broadcastForProject(theProject.id, "Project.DataPatch", {
+            data: {
+                taskStatuses: {
+                    $rewrite: true,
+                    ...taskStatuses
+                }
+            }
+        })
+
+        this.broadcastForProject(theProject.id, "Connect.NeedsRestart", { })
     }
 
     async onSystemSyncProjectUsers ({ project }) {

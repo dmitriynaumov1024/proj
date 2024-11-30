@@ -1,5 +1,7 @@
 import { Model, type } from "better-obj"
 import { pk, fk, cascade, max, belongsToOne, hasOne, unique, json } from "better-obj"
+import { nestedClone } from "common/utils/object"
+import { FundamentalTaskStatusOrder as FTSOrder } from "common/wsp/enums"
 
 const custom = {
     Timestamp: type.Integer,
@@ -248,6 +250,39 @@ export class Project extends Model
                 rules: [ json() ]
             }
         }
+    }
+
+    static create () {
+        return new Project({
+            version: 1,
+            data: {
+                createdAt: Date.now(),
+                description: "",
+                preferences: { },
+                taskStatuses: Object.fromEntries(
+                    FTSOrder.map((value, index)=> [value, { index, value }])
+                ),
+                taskFields: { },
+                taskObjects: { },
+                comments: { },
+                activities: { },
+                users: { },
+                groups: { }
+            },
+            history: {
+                head: null,
+                commits: [ ],
+                events: [ ]
+            },
+            plugins: [
+                { type: "inline", code: "" }
+            ]
+        })
+    }
+
+    setParent (projectinfo) {
+        this.id = projectinfo.id
+        return this
     }
 }
 

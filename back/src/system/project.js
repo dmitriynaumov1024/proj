@@ -2,7 +2,7 @@ import { SystemUnit } from "./__base.js"
 import { base32id, base16id } from "common/utils/id"
 import { filterFields } from "common/utils/object"
 import { hash } from "common/utils/hash"
-import { ProjectInfo as ProjectInfoModel } from "../database/models.js"
+import { ProjectInfo as ProjectInfoModel, Project as ProjectModel } from "../database/models.js"
 import { PermissionLevel as PL, InvolvementStatus as IS } from "../database/enums.js"
 
 const pageSize = 20
@@ -59,12 +59,8 @@ export class Project extends SystemUnit
             publicClone: false
         })
 
-        let theProject = await database.project.query().insert({
-            id: theProjectInfo.id,
-            data: { },
-            history: { },
-            plugins: [ ]
-        })
+        let theProject = ProjectModel.create().setParent(theProjectInfo)
+        theProject = await database.project.query().insert(theProject)
 
         let { projectInvolvement } = await this.parent.projectInvolvement.create({
             project: { id: theProject.id },
