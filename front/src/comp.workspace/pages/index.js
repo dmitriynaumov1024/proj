@@ -2,6 +2,7 @@ import defaultPage from "./default.js"
 import notFoundPage from "./notfound.js"
 import usersPage from "./users.js"
 import settingsProjectPage from "./settings.project.js"
+import settingsTaskStatusPage from "./settings.taskstatus.js"
 
 // re-export all known pages
 export default {
@@ -9,6 +10,7 @@ export default {
     notfound: notFoundPage,
     users: usersPage,
     settings: {
-        project: settingsProjectPage 
+        project: settingsProjectPage,
+        taskstatus: settingsTaskStatusPage,
     }
 }

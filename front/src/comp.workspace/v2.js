@@ -46,6 +46,7 @@ const WorkspaceAppPages = {
     [notFoundRoute]: m(pages.notfound),
     "users": m(pages.users),
     "settings.project": m(pages.settings.project),
+    "settings.taskstatus": m(pages.settings.taskstatus),
 }
 
 const WorkspaceAppTemplate = {
@@ -56,6 +57,7 @@ const WorkspaceAppTemplate = {
                 error: true,
                 message: null
             },
+            needsRestart: false,
             activeMenuItem: null,
             expandMenu: false,
             route: defaultRoute,
@@ -86,6 +88,9 @@ const WorkspaceAppTemplate = {
                 this.connection.error = true
                 this.connection.message = "Either banned from project or project does not allow public read."
             })
+            socket.on("Connect.NeedsRestart", () => {
+                this.needsRestart = true
+            })
         },
         setupApp() {
             let app = this.$app
@@ -99,6 +104,7 @@ const WorkspaceAppTemplate = {
             await this.$socket.ready()
             this.$socket.on("Project.Data", (data)=> {
                 this.$storage.project = data
+                window.getProject = ()=> this.$storage.project
             })
             this.$socket.on("Project.DataPatch", (data)=> {
                 nestedAssign(this.$storage.project, data)
@@ -117,6 +123,7 @@ const WorkspaceAppTemplate = {
         },
         onMenuClick (item) {
             this.activeMenuItem = item
+            this.expandMenu = false
             this.route = item?.route
             this.query = item?.query?? { }
         }
@@ -139,6 +146,11 @@ const WorkspaceAppTemplate = {
                     app.ready? [
                         h(Menu, { expand: this.expandMenu, items: app.menu, activeItem: (item)=> (this.route == item.route), onClick: (item)=> this.onMenuClick(item) }),
                         h("div", { class: ["wsp-main", "pad-05"] }, [
+                            this.needsRestart?
+                            h("p", { class: ["mar-b-1"]}, [
+                                "Project workspace needs to be reloaded to sync changes. ", 
+                                h("a", { class: ["color-bad"], onClick: ()=> this.$reload() }, "Reload")
+                            ]) : null,
                             h(app.pages[this.route]?? app.pages[notFoundRoute], { parent: this })
                         ])
                     ] : h("p", { }, "Preparing app UI...")
@@ -170,6 +182,7 @@ function createNestedApp(id, parent) {
     app.use(installable("$locale", parent.$locale))
     app.use(installable("$app", appStorage))
     app.use(installable("$storage", storage))
+    app.use(installable("$reload", ()=> parent.onSwitchWorkspace(id, id) ))
     return app
 }
 
