@@ -183,13 +183,13 @@ export class ProjectWorkspace extends SystemUnit
     assume request project = { title, description }
     */
     async onWspUpdateProjectInfo ({ project }, context) {
-        let pl = context.data?.permission
+        let pl = context.data.involvement?.permission
         let canUpdateInfo = pl == PL.admin || pl == PL.owner
-        if (!canUpdateInfo) context.send("Action.Forbidden", { })
+        if (!canUpdateInfo) return context.send("Action.Forbidden", { })
 
         let { cache, sockets } = this.services
         let theProject = cache.project.get(context.data.project.id)
-        if (!theProject) context.send("Action.BadRequest", { })
+        if (!theProject) return context.send("Action.BadRequest", { })
 
         theProject.changedAt = Date.now()
         if (Object.hasOwn(project, "title")) theProject.title = project.title
@@ -204,13 +204,13 @@ export class ProjectWorkspace extends SystemUnit
     }
 
     async onWspUpdateProjectTaskStatuses ({ taskStatuses }, context) {
-        let pl = context.data?.permission
+        let pl = context.data.involvement?.permission
         let canUpdateInfo = pl == PL.admin || pl == PL.owner
-        if (!canUpdateInfo) context.send("Action.Forbidden", { })
+        if (!canUpdateInfo) return context.send("Action.Forbidden", { })
 
         let { cache, sockets } = this.services
         let theProject = cache.project.get(context.data.project.id)
-        if (!theProject) context.send("Action.BadRequest", { })
+        if (!theProject) return context.send("Action.BadRequest", { })
 
         theProject.project.data.taskStatuses = nestedClone(taskStatuses)
         theProject.changedAt = Date.now()
@@ -223,6 +223,26 @@ export class ProjectWorkspace extends SystemUnit
                 }
             }
         })
+
+        this.broadcastForProject(theProject.id, "Connect.NeedsRestart", { })
+    }
+
+    async onWspUpdatePlugins ({ plugins }, context) {
+        let pl = context.data.involvement?.permission
+        console.log(pl)
+        let canUpdateInfo = pl == PL.admin || pl == PL.owner
+        if (!canUpdateInfo) return context.send("Action.Forbidden", { })
+
+        let { cache, sockets } = this.services
+        let theProject = cache.project.get(context.data.project.id)
+        if (!theProject) return context.send("Action.BadRequest", { })
+
+        console.log(theProject.project.plugins)
+        for (let key in plugins) {
+            theProject.project.plugins[key] = plugins[key]
+        }
+        console.log(theProject.project.plugins)
+        theProject.changedAt = Date.now()
 
         this.broadcastForProject(theProject.id, "Connect.NeedsRestart", { })
     }
