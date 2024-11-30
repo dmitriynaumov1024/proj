@@ -70,6 +70,7 @@
 [4][1:1] Project
 --- fields
   + id: String PK FK(ProjectInfo) delete cascade
+  + version: Number
   + data: ProjectData/String # json encoded 
   + history: ProjectHistory/String # json encoded
   + plugins: PluginVersion[]/String # json encoded
@@ -242,7 +243,9 @@
 + preferences: Object
 + taskStatuses: Object
   + [key]: String # status name
-  + [value]: String # fundamental status name
+  + [value]: Object
+    + index: Number
+    + value: String # fundamental status name
 + taskFields: Object
   + [key]: String # task object type = Task|Milestone|TaskSet
   + [value]: FieldSet
@@ -255,15 +258,15 @@
     + [key]: String
     + [value]: Comment
 + activities: Object
-  + [key]: String # person key
+  + [key]: String # user id
   + [value]: Object
     + [key]: String
     + [value]: Activity
-+ people: Object
-  + [key]: String
++ users: Object
+  + [key]: String # user id
   + [value]: User
 + groups: Object
-  + [key]: String
+  + [key]: String # group name
   + [value]: Group
 
 [25] FieldSet
@@ -278,10 +281,10 @@
 + name: String
 + type: String
 + editable: Boolean
-+ min: Number
-+ max: Number
-+ pattern: String
-+ values: String[]
++ min: Number # for type=number|timestamp
++ max: Number # for type=number|timestamp
++ pattern: String # for type=string
++ values: String[] # for type=enum
 + default: Boolean|Number|String|Timestamp
 
 [27] TaskObject
@@ -294,6 +297,17 @@
 + description: String
 + draft: Boolean
 + createdAt: Timestamp
+--- not editable, set by system:
+  + id
+  + type
+  + createdAt
+--- special primary:
+  + ownerId, groupId
+--- hand-editable primary:
+  + title
+  + description
+  + draft
+  + permissions
 
 [28] Task extends TaskObject
 + assigned: String[] 
@@ -301,16 +315,21 @@
 + taskSetId: String
 + estimateHours: Number
 + estimatePoints: Number
-+ ...
+--- special primary:
+  + taskSetId, assigned, status
+--- hand-editable primary:
+  + estimateHours, estimatePoints
 
 [29] Milestone extends TaskObject
 + deadlineAt: Timestamp
-+ ...
+--- hand-editable primary:
+  + deadlineAt
 
 [30] TaskSet extends TaskObject
 + status: String 
 + get assigned: String[] 
-+ ...
+--- special primary:
+  + status
 
 [31] TaskTemplate extends TaskObject
 + slots: Object
@@ -333,8 +352,7 @@
   + value: String # exact value
 
 [33] ObjectPermissionSet
-+ [key]: String "group"|"everyone" # no "owner" key because 
-                                     owner always has full privileges 
++ [key]: String "group"|"assigned"|"everyone"
 + [value]: String "view"|"comment"|"edit"
 
 [34] Activity 
@@ -363,6 +381,8 @@
 + members: Number[] # person ids
 
 [38] PluginVersion
++ type: String # "inline"|null
 + id: String
 + pluginId: String
 + version: String
++ code: String # for inline plugins
