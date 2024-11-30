@@ -75,6 +75,18 @@ div#app {
 .h100 {
   height: 100%;
 }
+.wwc {
+  max-width: 360px;
+  width: 100%;
+}
+
+.stick-left.stick-left {
+  margin-left: 0;
+}
+
+.stick-right.stick-right {
+  margin-right: 0;
+}
 
 @media screen and (min-width: 490px) {
   .wc {
@@ -84,6 +96,9 @@ div#app {
     width: 420px;
   }
   .ww {
+    max-width: 720px;
+  }
+  .wwc {
     max-width: 720px;
   }
 }

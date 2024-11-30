@@ -35,7 +35,7 @@ export default {
     },
     render() {
         let loc = this.$locale.current
-        return h("div", { class: ["pad-025"] }, [
+        return h("div", { class: ["pad-025", "wwc", "stick-left"] }, [
             h("h3", { class: ["mar-b-05"] }, "Settings"),
             h("div", { class: ["mar-b-05"] }, [
                 h("p", { }, "Title"),

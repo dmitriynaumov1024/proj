@@ -18,23 +18,25 @@ const notFoundRoute = "notFound"
 
 const WorkspaceAppMenu = [
     {
-        name: "View",
+        name: "Tasks",
         items: [
             { name: "Task list", icon: m(ico.TaskListIcon), route: "tasklist" },
-            { name: "Task board", icon: m(ico.TaskBoardIcon), route: "taskboard" }
+            { name: "Task board", icon: m(ico.TaskBoardIcon), route: "taskboard" },
         ]
     },
     {
         name: "Collaboration",
         items: [
             { name: "Users", icon: m(ico.PersonIcon), route: "users" },
-            { name: "Groups", icon: m(ico.PersonIcon), route: "groups" }
+            { name: "Groups", icon: m(ico.PersonGroupIcon), route: "groups" }
         ]
     },
     {
         name: "Settings",
         items: [
-            { name: "Project settings", icon: m(ico.Gear6Icon), route: "settings" }
+            { name: "Project settings", icon: m(ico.Gear6Icon), route: "settings.project" },
+            { name: "Task fields", icon: m(ico.TaskIcon), route: "settings.taskfields"  },
+            { name: "Task states", icon: m(ico.ActivityIcon), route: "settings.taskstatus" },
         ]
     }
 ]
@@ -42,8 +44,8 @@ const WorkspaceAppMenu = [
 const WorkspaceAppPages = {
     [defaultRoute]: m(pages.default),
     [notFoundRoute]: m(pages.notfound),
-    users: m(pages.users),
-    settings: m(pages.settings),
+    "users": m(pages.users),
+    "settings.project": m(pages.settings.project),
 }
 
 const WorkspaceAppTemplate = {
@@ -129,7 +131,7 @@ const WorkspaceAppTemplate = {
                 h("div", { class: ["clickable"], active: this.expandMenu, role: "wsp-menu-handle", onClick: ()=> this.expandMenu = !this.expandMenu }, [
                     h(ico.MenuHandleIcon, { class: ["icon-20"] })
                 ]),
-                h("h2", { }, project?.title ?? loc.workspace.self)
+                h("h2", { class: ["clickable"], onClick: ()=> this.navigate(defaultRoute) }, project?.title ?? loc.workspace.self)
             ]),
             h("div", { class: ["bv", "flex-grow", "scroll"] }, [
                 connection.ok?

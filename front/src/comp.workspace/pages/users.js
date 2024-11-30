@@ -4,7 +4,7 @@ export default ({ parent })=> {
     let self = parent
     let loc = self.$locale.current
     let project = self.$storage.project
-    return h("div", { class: ["pad-025"] }, [
+    return h("div", { class: ["pad-025", "wwc", "stick-left"] }, [
         h("h3", { class: ["mar-b-05"] }, loc.user.plural),
         h("div", { class: ["mar-b-05"] }, [
             project.data.users?
