@@ -16,7 +16,7 @@ import pages from "./pages/index.js"
 const defaultRoute = "index"
 const notFoundRoute = "notFound"
 
-const WorkspaceAppMenu = [
+const WorkspaceAppMenu = ()=> ([
     {
         name: "Tasks",
         items: [
@@ -28,7 +28,7 @@ const WorkspaceAppMenu = [
         name: "Collaboration",
         items: [
             { name: "Users", icon: m(ico.PersonIcon), route: "users" },
-            { name: "Groups", icon: m(ico.PersonGroupIcon), route: "groups" }
+            // { name: "Groups", icon: m(ico.PersonGroupIcon), route: "groups" }
         ]
     },
     {
@@ -37,17 +37,21 @@ const WorkspaceAppMenu = [
             { name: "Project settings", icon: m(ico.Gear6Icon), route: "settings.project" },
             { name: "Task fields", icon: m(ico.TaskIcon), route: "settings.taskfields"  },
             { name: "Task states", icon: m(ico.ActivityIcon), route: "settings.taskstatus" },
+            { name: "Plugins", icon: m(ico.CodeIcon), route: "settings.plugins" }
         ]
     }
-]
+])
 
-const WorkspaceAppPages = {
+const WorkspaceAppPages = ()=> ({
     [defaultRoute]: m(pages.default),
     [notFoundRoute]: m(pages.notfound),
     "users": m(pages.users),
     "settings.project": m(pages.settings.project),
     "settings.taskstatus": m(pages.settings.taskstatus),
-}
+    "settings.plugins": m(pages.settings.plugins),
+})
+
+import * as $vue from "vue"
 
 const WorkspaceAppTemplate = {
     data() {
@@ -95,16 +99,81 @@ const WorkspaceAppTemplate = {
         setupApp() {
             let app = this.$app
             // set up app menu
-            app.menu = WorkspaceAppMenu
+            app.menu = WorkspaceAppMenu()
             // set up app pages
-            app.pages = Object.assign({ }, WorkspaceAppPages)
+            app.pages = WorkspaceAppPages()
+            app.navigate = m((route, query)=> this.navigate(route, query))
             app.ready = true
+        },
+        async createPlugins() {
+            console.log("creating plugins...")
+            let theImports = {
+                vue: $vue,
+                // add more imports here if necessary
+            }
+            this.$storage.plugins ??= [ ]
+            for (let plugin of this.$storage.project.plugins) {
+                let theExports = { }
+                let code = "let { require, imports, exports } = options;\n" + await this.getPluginCode(plugin) 
+                try {
+                    let pluginFactory = new Function("options", code)
+                    pluginFactory({ 
+                        require: (name)=> theImports[name], 
+                        imports: theImports,
+                        exports: theExports
+                    })
+                    this.$storage.plugins.push(theExports.default || { })
+                }
+                catch (error) {
+                    console.error("Failed to create plugin "+plugin.id??"[untitled plugin]")
+                    console.error(error)
+                }
+            }
+        },
+        async installPlugins() {
+            console.log("installing plugins...")
+            let theApp = {
+                ...this.$app,
+                storage: this.$storage,
+                locale: this.$locale,
+                socket: this.$socket,
+                http: this.$http
+            }
+            for (let plugin of this.$storage.plugins) {
+                if (plugin?.install instanceof Function) await plugin.install(theApp)
+            }
+        },
+        async mountPlugins() {
+            console.log("mounting plugins...")
+            let theApp = {
+                ...this.$app,
+                storage: this.$storage,
+                locale: this.$locale,
+                socket: this.$socket,
+                http: this.$http
+            }
+            for (let plugin of this.$storage.plugins) {
+                if (plugin?.mount instanceof Function) await plugin.mount(theApp)
+            }
+        },
+        async getPluginCode (plugin) {
+            if (plugin.type == "inline") {
+                console.log("loading inline plugin ok")
+                return plugin.code
+            }
+            else {
+                console.warn("loading external plugins not impl. yet")
+                return ""
+            }
         },
         async connectToProject() {
             await this.$socket.ready()
-            this.$socket.on("Project.Data", (data)=> {
+            this.$socket.on("Project.Data", async (data)=> {
                 this.$storage.project = data
                 window.getProject = ()=> this.$storage.project
+                await this.createPlugins()
+                await this.installPlugins()
+                await this.mountPlugins()
             })
             this.$socket.on("Project.DataPatch", (data)=> {
                 nestedAssign(this.$storage.project, data)
@@ -147,11 +216,11 @@ const WorkspaceAppTemplate = {
                         h(Menu, { expand: this.expandMenu, items: app.menu, activeItem: (item)=> (this.route == item.route), onClick: (item)=> this.onMenuClick(item) }),
                         h("div", { class: ["wsp-main", "pad-05"] }, [
                             this.needsRestart?
-                            h("p", { class: ["mar-b-1"]}, [
+                            h("p", { class: ["mar-b-1", "pad-025", "bb"] }, [
                                 "Project workspace needs to be reloaded to sync changes. ", 
                                 h("a", { class: ["color-bad"], onClick: ()=> this.$reload() }, "Reload")
                             ]) : null,
-                            h(app.pages[this.route]?? app.pages[notFoundRoute], { parent: this })
+                            h(app.pages[this.route]?? app.pages[notFoundRoute], { parent: this, query: this.query })
                         ])
                     ] : h("p", { }, "Preparing app UI...")
                 ]) :
