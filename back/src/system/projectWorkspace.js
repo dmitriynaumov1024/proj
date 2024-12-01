@@ -229,7 +229,6 @@ export class ProjectWorkspace extends SystemUnit
 
     async onWspUpdatePlugins ({ plugins }, context) {
         let pl = context.data.involvement?.permission
-        console.log(pl)
         let canUpdateInfo = pl == PL.admin || pl == PL.owner
         if (!canUpdateInfo) return context.send("Action.Forbidden", { })
 
@@ -237,11 +236,59 @@ export class ProjectWorkspace extends SystemUnit
         let theProject = cache.project.get(context.data.project.id)
         if (!theProject) return context.send("Action.BadRequest", { })
 
-        console.log(theProject.project.plugins)
         for (let key in plugins) {
             theProject.project.plugins[key] = plugins[key]
         }
-        console.log(theProject.project.plugins)
+        theProject.changedAt = Date.now()
+
+        this.broadcastForProject(theProject.id, "Connect.NeedsRestart", { })
+    }
+
+    async onWspReorderPlugins ({ reorder }, context) {
+        let pl = context.data.involvement?.permission
+        let canUpdateInfo = pl == PL.admin || pl == PL.owner
+        if (!canUpdateInfo) return context.send("Action.Forbidden", { })
+
+        let { cache, sockets } = this.services
+        let theProject = cache.project.get(context.data.project.id)
+        if (!theProject) return context.send("Action.BadRequest", { })
+
+        let oldPlugins = theProject.project.plugins 
+        theProject.project.plugins = []
+        for (let i in reorder) theProject.project.plugins[i] = oldPlugins[reorder[i]]
+        theProject.changedAt = Date.now()
+
+        this.broadcastForProject(theProject.id, "Connect.NeedsRestart", { })
+    }
+
+    async onWspTogglePlugins ({ plugins }, context) {
+        let pl = context.data.involvement?.permission
+        let canUpdateInfo = pl == PL.admin || pl == PL.owner
+        if (!canUpdateInfo) return context.send("Action.Forbidden", { })
+
+        let { cache, sockets } = this.services
+        let theProject = cache.project.get(context.data.project.id)
+        if (!theProject) return context.send("Action.BadRequest", { })
+
+        for (let p of plugins) {
+            let thePlugin = theProject.project.plugins.find(plugin=> plugin.id==p.id)
+            if (thePlugin) thePlugin.enabled = p.enabled
+        }
+        theProject.changedAt = Date.now()
+        
+        this.broadcastForProject(theProject.id, "Connect.NeedsRestart", { })
+    }
+
+    async onWspDeletePlugin ({ id }, context) {
+        let pl = context.data.involvement?.permission
+        let canUpdateInfo = pl == PL.admin || pl == PL.owner
+        if (!canUpdateInfo) return context.send("Action.Forbidden", { })
+
+        let { cache, sockets } = this.services
+        let theProject = cache.project.get(context.data.project.id)
+        if (!theProject) return context.send("Action.BadRequest", { })
+
+        theProject.project.plugins.splice(id, 1)
         theProject.changedAt = Date.now()
 
         this.broadcastForProject(theProject.id, "Connect.NeedsRestart", { })
