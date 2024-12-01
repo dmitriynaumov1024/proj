@@ -113,6 +113,7 @@ const WorkspaceAppTemplate = {
             }
             this.$storage.plugins ??= [ ]
             for (let plugin of this.$storage.project.plugins) {
+                if (!plugin.enabled) continue
                 let theExports = { }
                 let code = "let { require, imports, exports } = options;\n" + await this.getPluginCode(plugin) 
                 try {
