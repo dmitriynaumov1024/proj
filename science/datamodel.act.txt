@@ -204,10 +204,6 @@
 | "deploying": "working"
 | "done": "finished"
 
-## Assignee selector
-| "@<userName>" select person with userName 
-| "@#<groupName>" select group
-
 [21] ProjectHistory
 + head: String # head commit id
 + commits: Array
@@ -253,7 +249,7 @@
   + [key]: String
   + [value]: Task|Milestone|TaskSet|TaskTemplate
 + comments: Object # comments on task objects
-  + [key]: String # task key
+  + [key]: String # task object id
   + [value]: Object
     + [key]: String
     + [value]: Comment
@@ -265,19 +261,17 @@
 + users: Object
   + [key]: String # user id
   + [value]: User
-+ groups: Object
-  + [key]: String # group name
-  + [value]: Group
 
 [25] FieldSet
 + primary: Object
-  + [key]: String
+  + [key]: String # name
   + [value]: Field
 + secondary: Object
-  + [key]: String
+  + [key]: String # name
   + [value]: Field
 
 [26] Field
++ index: Number
 + name: String
 + type: String
 + editable: Boolean
@@ -288,11 +282,9 @@
 + default: Boolean|Number|String|Timestamp
 
 [27] TaskObject
-+ id: String 
-+ type: String
++ id: String # random id
++ type: String # Task|Milestone|TaskSet|TaskTemplate
 + ownerId: String
-+ groupId: String
-+ permissions: ObjectPermissionSet
 + title: String
 + description: String
 + draft: Boolean
@@ -302,12 +294,11 @@
   + type
   + createdAt
 --- special primary:
-  + ownerId, groupId
+  + ownerId
 --- hand-editable primary:
   + title
   + description
   + draft
-  + permissions
 
 [28] Task extends TaskObject
 + assigned: String[] 
@@ -333,7 +324,7 @@
 
 [31] TaskTemplate extends TaskObject
 + slots: Object
-  + [key]: String
+  + [key]: String # slot name
   + [value]: Field
 + output: Array
   + [value]: Object
@@ -341,7 +332,7 @@
     + fields: TaskTemplateFieldSet
 
 [32] TaskTemplateFieldSet
-+ [key]: String # field name
++ [key]: String # field id
 + [value]: Object
   + eval: Boolean # field := expression(slots)
   + const: Boolean # field := value
@@ -351,38 +342,32 @@
   + slot: String # slot name
   + value: String # exact value
 
-[33] ObjectPermissionSet
-+ [key]: String "group"|"assigned"|"everyone"
-+ [value]: String "view"|"comment"|"edit"
-
-[34] Activity 
+[33] Activity 
 + id: Number
 + taskId: Number
 + personId: Number
 + startedAt: Timestamp
 + finishedAt: Timestamp
 
-[35] Comment
-+ id: Number
+[34] Comment
++ id: String
 + createdAt: Timestamp
-+ authorId: Number
-+ text: String
++ authorId: String
++ text: String 
 
-[36] User
+[35] User
 + id: String
 + userName: String
 + displayName: String
++ email: String
 + createdAt: Timestamp
 + permission: PermissionLevel 
 
-[37] Group
-+ name: String # identifier
-+ displayName: String
-+ members: Number[] # person ids
-
-[38] PluginVersion
+[36] PluginVersion
 + type: String # "inline"|null
-+ id: String
-+ pluginId: String
-+ version: String
++ id: String # random id for inline plugins
++ name: String # name for inline plugins
++ pluginId: String # for external plugins
++ version: String # for external plugins
 + code: String # for inline plugins
++ enabled: Boolean

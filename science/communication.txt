@@ -1,37 +1,41 @@
 # Communication
 
-1. Frontend URIs
+## 1 Frontend URIs
 
 check ./pages.txt
 
-2. Rest API URIs
+## 2 Rest API URIs
 
--   get /api/info
-    info about this rest api server
+-   /api/utils
+    -   get /info # info about this rest api server
+    -   get /time # get time for timesync purposes
 
 -   /api/auth
     authentication & authorization stuff
-    -   post /login
-    -   post /logout
-    -   post /refresh
+    -   post /begin
+    -   post /complete
+    -   post /forgotpass
+    -   post /resetpass
+    -   post /ping
 
--   /api/person
+-   /api/user
     user profile management
     -   post /create
     -   post /update
-    -   get /view?id={id}
+    -   get /whoami
+    -   get /find
+    -   get /in-project
 
 -   /api/project
     project management
     -   post /create
     -   post /update
-    -   post /transfer
-    -   get /view?id={id}
-    -   get /list?page={page}
-    -   delete /delete?id={id}
     -   post /clone
+    -   get /find
+    -   get /own-list
+    -   delete /delete
 
--   /api/projectinvolvement
+-   /api/project/involvement
     project involvement management
     -   post /create
     -   post /update
@@ -46,19 +50,24 @@ check ./pages.txt
     -   get /view?id={id}
     -   get /list?page={page}&query={query}&authorId={authorId}
 
-3. WebSocket
+## 3 WebSocket
 
--   /ws
-    connect to one websocket endpoint
+-   client >> server
+    -   Connect ({ session, project })
+    -   UpdateProjectInfo ({ project })
+    -   UpdateProjectTaskStatuses ({ taskStatuses })
+    -   UpdatePlugins ({ update, reorder, toggle, remove })
+    -   ...
 
--   auth (personId)
-    auth as person with given id
-
--   subscribe (projectId)
-    subscribe to given project
-
--   patch (projectId, data)
-    patch project data
-
--   request (projectId, topic, page)
-    request for commits or event log or plugins
+-   server >> client
+    -   Connect.BadRequest
+    -   Connect.NotAuthorized
+    -   Connect.NotFound
+    -   Connect.Forbidden
+    -   Connect.Ok
+    -   Connect.NeedsRestart
+    -   Action.NotAuthorized
+    -   Action.Forbidden
+    -   Project.Data
+    -   Project.DataPatch
+    -   ...
