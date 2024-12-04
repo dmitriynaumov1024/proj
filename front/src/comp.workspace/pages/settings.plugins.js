@@ -40,32 +40,35 @@ export default {
     methods: {
         async saveChanges() {
             await this.$socket.ready()
-            let result = {
-                plugins: { [this.query.id]: this.plugin2 }
-            }
-            console.log(result)
-            this.$socket.send("UpdatePlugins", result)
+            this.$socket.send("UpdatePlugins", {
+                update: { [this.query.id]: this.plugin2 }
+            })
         },
         async saveNewPlugin(id, plugin) {
             await this.$socket.ready()
             this.$socket.send("UpdatePlugins", {
-                plugins: { [id]: plugin }
+                update: { [id]: plugin }
             })
         },  
         async applyReorder() {
             await this.$socket.ready()
-            this.$socket.send("ReorderPlugins", { reorder: this.reordering })
+            this.$socket.send("UpdatePlugins", { 
+                reorder: this.reordering 
+            })
             this.reordering = false
         },
         async applyToggle() {
             await this.$socket.ready()
-            this.$socket.send("TogglePlugins", { 
-                plugins: this.$storage.project.plugins.map((p, i)=> ({ id: p.id, enabled: this.toggling[i] }))
+            this.$socket.send("UpdatePlugins", { 
+                toggle: this.$storage.project.plugins
+                        .map((p, i)=> ({ id: p.id, enabled: this.toggling[i] }))
             })
         },
         async deletePlugin(id) {
             await this.$socket.ready()
-            this.$socket.send("DeletePlugin", { id })
+            this.$socket.send("UpdatePlugins", { 
+                remove: { id } 
+            })
         },
         onReset() {
             if (this.changed) {
@@ -225,7 +228,7 @@ export default {
                         onClick: ()=> this.parent.navigate(this.parent.route, { id: i }) },
                         p.type=="inline"? `[inline:${p.id}] ${p.name||p.id}` : `[external:${p.id}]`
                     ),
-                    h("span", { class: ["pad-05", "clickable", "color-bad"], onClick: ()=> this.onBeginDeletePlugin(i) }, "\u2a2f")
+                    h("span", { class: ["pad-05", "clickable", "color-bad"], onClick: ()=> this.onBeginDeletePlugin(p.id) }, "\u2a2f")
                 ])),
                 this.deleting?
                 h(Modal, { titleText: "Delete plugin", onClickOutside: ()=> this.onCompleteDeletePlugin(false) }, ()=> [

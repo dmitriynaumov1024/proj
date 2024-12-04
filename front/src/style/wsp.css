@@ -8,6 +8,7 @@ body {
 
 .wsp-menu {
   scrollbar-width: none;
+  flex-shrink: 0;
 }
 
 .wsp-main {
