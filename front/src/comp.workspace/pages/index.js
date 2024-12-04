@@ -3,6 +3,7 @@ import notFoundPage from "./notfound.js"
 import usersPage from "./users.js"
 import taskListPage from "./task.list.js"
 import settingsProjectPage from "./settings.project.js"
+import settingsTaskFieldsPage from "./settings.taskfields.js"
 import settingsTaskStatusPage from "./settings.taskstatus.js"
 import settingsPluginsPage from "./settings.plugins.js"
 
@@ -16,6 +17,7 @@ export default {
     },
     settings: {
         project: settingsProjectPage,
+        taskfields: settingsTaskFieldsPage,
         taskstatus: settingsTaskStatusPage,
         plugins: settingsPluginsPage
     }

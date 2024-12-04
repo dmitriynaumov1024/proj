@@ -56,3 +56,30 @@ body {
     overflow-y: scroll;
   }
 }
+
+.task-list-row, .list-row {
+  margin-bottom: 0.25rem;
+  white-space: nowrap;
+  display: flex;
+  overflow-x: visible;
+}
+
+.task-list-cell, .list-cell {
+  padding: 0.5rem 0.25rem;
+  display: inline-block;
+  width: 13rem;
+  white-space: pre;
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+}
+
+.task-list-cell+.task-list-cell, .list-cell+.list-cell {
+  border-left: 2px solid rgba(128, 128, 128, 0.1);
+}
+
+.task-list-header>.task-list-cell, .task-list-header>.fake-task-list-cell,
+.list-header>.list-cell, .list-header>.fake-list-cell {
+  border-top: 2px solid rgba(128, 128, 128, 0.2);
+  border-bottom: 2px solid rgba(128, 128, 128, 0.2);
+}
