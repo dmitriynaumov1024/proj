@@ -1,7 +1,11 @@
 import { Model, type } from "better-obj"
 import { pk, fk, cascade, max, belongsToOne, hasOne, unique, json } from "better-obj"
 import { nestedClone } from "common/utils/object"
-import { FundamentalTaskStatusOrder as FTSOrder } from "common/wsp/enums"
+import { 
+    FundamentalTaskStatusOrder as FTSOrder,
+    ObjectType as OType 
+} from "common/wsp/enums"
+import { base32id } from "common/utils/id"
 
 const custom = {
     Timestamp: type.Integer,
@@ -253,6 +257,65 @@ export class Project extends Model
     }
 
     static create () {
+        let commonTaskObjectFields = {
+            type: {
+                index: -1,
+                name: "type",
+                type: "type",
+                editable: false
+            },
+            id: {
+                index: 0,
+                name: "id",
+                type: "string",
+                editable: false,
+                dataSource: "id"
+            },
+            createdAt: {
+                index: 1,
+                name: "createdAt",
+                type: "timestamp",
+                editable: false,
+                dataSource: "timestamp"
+            },
+            ownerId: {
+                index: 2,
+                name: "ownerId",
+                type: "string",
+                editable: true,
+                dataSource: "userIds"
+            },
+            draft: {
+                index: 3,
+                name: "draft",
+                type: "boolean",
+                editable: true,
+                default: true
+            },
+            title: {
+                index: 4,
+                name: "title",
+                type: "string",
+                editable: true,
+                max: 99,
+                default: ""
+            },
+            description: {
+                index: 5,
+                name: "description",
+                type: "string",
+                editable: true,
+                max: 2000,
+                default: ""
+            },
+            status: {
+                index: 6,
+                name: "status",
+                type: "string",
+                editable: true,
+                dataSource: "taskStatuses"
+            }
+        }
         return new Project({
             version: 1,
             data: {
@@ -262,7 +325,75 @@ export class Project extends Model
                 taskStatuses: Object.fromEntries(
                     FTSOrder.map((value, index)=> [value, { index, value }])
                 ),
-                taskFields: { },
+                taskFields: { 
+                    [OType.TaskTemplate]: {
+                        primary: {
+                            ...commonTaskObjectFields
+                        },
+                        secondary: { }
+                    },
+                    [OType.Task]: {
+                        primary: {
+                            ...commonTaskObjectFields,
+                            assigned: {
+                                index: 11,
+                                name: "assigned",
+                                type: "string",
+                                editable: true,
+                                multiple: true,
+                                dataSource: "userIds"
+                            },
+                            taskSetId: {
+                                index: 12,
+                                name: "taskSetId",
+                                type: "string",
+                                editable: true,
+                                dataSource: "taskSetIds",
+                            },
+                            estimateHours: {
+                                index: 13,
+                                name: "estimateHours",
+                                type: "number",
+                                editable: true,
+                                min: 0,
+                                max: 720
+                            },
+                            estimatePoints: {
+                                index: 14,
+                                name: "estimatePoints",
+                                type: "number",
+                                editable: true,
+                                min: 0, 
+                                max: 999999
+                            }
+                        },
+                        secondary: {
+                            // nothing, to be filled by users
+                        }
+                    },
+                    [OType.TaskSet]: {
+                        primary: {
+                            ...commonTaskObjectFields,
+                        },
+                        secondary: {
+                            // nothing, to be filled by users
+                        }
+                    },
+                    [OType.Milestone]: {
+                        primary: {
+                            ...commonTaskObjectFields,
+                            deadlineAt: {
+                                index: 11,
+                                name: "deadlineAt",
+                                type: "timestamp",
+                                editable: true,
+                            }
+                        },
+                        secondary: {
+                            // nothing, to be filled by users
+                        }
+                    }
+                },
                 taskObjects: { },
                 comments: { },
                 activities: { },
@@ -274,9 +405,13 @@ export class Project extends Model
                 commits: [ ],
                 events: [ ]
             },
-            plugins: [
-                { type: "inline", code: "" }
-            ]
+            plugins: [{
+                id: base32id(16),
+                type: "inline",
+                name: "new-plugin",
+                code: "console.log('hello world!')",
+                enabled: true,
+            }]
         })
     }
 
