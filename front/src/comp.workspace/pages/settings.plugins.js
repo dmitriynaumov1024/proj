@@ -149,11 +149,19 @@ export default {
                     })
                 ]),
                 h("div", { class: ["mar-b-1"] }, [
-                    h("p", { }, "Code"),
-                    h("textarea", { class: ["block", "text-mono", "hmin70"],
+                    h("p", { }, "Code - cjs, supports require and exports"),
+                    h("textarea", { class: ["block", "text-mono", "hmin50"],
                         readonly: !this.canEdit,
                         value: this.plugin2.code,
                         onChange: (e)=> { this.plugin2.code = e.target.value; this.changed = true }
+                    })
+                ]),
+                h("div", { class: ["mar-b-1"] }, [
+                    h("p", { }, "Style - plain css"),
+                    h("textarea", { class: ["block", "text-mono", "hmin50"],
+                        readonly: !this.canEdit,
+                        value: this.plugin2.style,
+                        onChange: (e)=> { this.plugin2.style = e.target.value; this.changed = true }
                     })
                 ]),
                 this.changed?

@@ -90,11 +90,20 @@ const WorkspaceAppTemplate = {
                 else throw new Error(`require(): could not find import '${name}'`)
             }
             this.$storage.plugins ??= [ ]
+            this.$storage.pluginscss ??= [ ]
             for (let plugin of this.$storage.project.plugins) {
                 if (!plugin.enabled) continue
                 let theExports = { }
-                let code = "let { require, imports, exports } = options;\n" + await this.getPluginCode(plugin) 
                 try {
+                    let css = await this.getPluginCss(plugin)
+                    if (!!css) this.$storage.pluginscss.push(css)
+                }
+                catch (error) {
+                    console.error(`Failed to load css for '${plugin.name||plugin.id}'`)
+                    console.error(error)
+                }
+                try {
+                    let code = "let { require, imports, exports } = options;\n" + await this.getPluginCode(plugin) 
                     let pluginFactory = new Function("options", code)
                     pluginFactory({ 
                         require: (name)=> theImports[name], 
@@ -146,6 +155,15 @@ const WorkspaceAppTemplate = {
                 return ""
             }
         },
+        async getPluginCss (plugin) {
+            if (plugin.type == "inline") {
+                return plugin.style
+            }
+            else {
+                console.warn("loading external plugins' stylesheets not impl. yet")
+                return ""
+            }
+        },
         async connectToProject() {
             await this.$socket.ready()
             this.$socket.on("Project.Data", async (data)=> {
@@ -183,6 +201,7 @@ const WorkspaceAppTemplate = {
         const project = this.$storage.project
         const app = this.$app
         return h("div", { class: ["h100", "flex-v"] }, [
+            this.$storage.pluginscss?.map(css=> h("style", { }, css)),
             h(HeaderLayout, { hless: true, wfull: true, style: {"flex-shrink": 0} }, ()=> [
                 h("div", { class: ["clickable"], active: this.expandMenu, role: "wsp-menu-handle", onClick: ()=> this.expandMenu = !this.expandMenu }, [
                     h(ico.MenuHandleIcon, { class: ["icon-20"] })

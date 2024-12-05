@@ -23,6 +23,10 @@ body {
 div#app {
 }
 
+.hmin50 {
+  min-height: 50vh;
+}
+
 .hmin70 {
   min-height: 70vh;
 }
