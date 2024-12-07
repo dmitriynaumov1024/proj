@@ -265,6 +265,56 @@ export class ProjectWorkspace extends SystemUnit
         this.broadcastForProject(theProject.id, "Connect.NeedsRestart", { })
     }
 
+    async onWspUpdateTask ({ add, update, remove }, context) {
+        let pl = context.data.involvement?.permission
+        let canUpdateInfo = pl == PL.edit || pl == PL.admin || pl == PL.owner
+        if (!canUpdateInfo) return context.send("Action.Forbidden", { })
+
+        let { cache, sockets } = this.services
+        let theProject = cache.project.get(context.data.project.id)
+        if (!theProject) return context.send("Action.BadRequest", { })
+
+        let before = { }, after = { }
+
+        if (add) {
+            after[add.id] = add
+        }
+        else if (update) {
+            before[update.id] = theProject.project.data.taskObjects[update.id]
+            after[update.id] = update
+        }
+        else if (remove) {
+            before[remove.id] = theProject.project.data.taskObjects[remove.id]
+        }
+        else {
+            return false
+        }
+
+        theProject.changedAt = Date.now()
+
+        this.events.emit("system:CommitTaskObjects", { 
+            project: theProject.project,
+            commit: {
+                before, after, 
+                createdAt: Date.now() 
+            },
+        })
+    }
+
+    onSystemCommitTaskObjects ({ commit, project }) {
+        project.history.commits ??= [ ]
+        project.history.commits.push(commit) 
+
+        for (let key in commit.before) {
+            if (!commit.after[key]) delete project.data.taskObjects[key]
+        }
+        for (let key in commit.after) {
+            project.data.taskObjects[key] = commit.after[key]
+        }
+
+        this.broadcastForProject(project.id, "Project.PatchTaskObjects", commit)
+    }
+
     async onSystemSyncProjectUsers ({ project }) {
         let { logger, cache, database, sockets } = this.services
         let theProject = cache.project.get(project.id)
@@ -293,6 +343,12 @@ export class ProjectWorkspace extends SystemUnit
                 }
             }
         })
+    }
+
+    onSystemDeleteProject ({ project }) {
+        let cache = this.services.cache
+        cache.project.delete(project.id)
+        this.broadcastForProject(project.id, "Connect.NeedsRestart", { })
     }
 
     onSystemCreateInvolvement ({ project }) {

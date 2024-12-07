@@ -382,12 +382,19 @@ export class Project extends Model
                     [OType.Milestone]: {
                         primary: {
                             ...commonTaskObjectFields,
-                            deadlineAt: {
+                            taskSetId: {
                                 index: 11,
+                                name: "taskSetId",
+                                type: "string",
+                                editable: true,
+                                dataSource: "taskSetIds",
+                            },
+                            deadlineAt: {
+                                index: 12,
                                 name: "deadlineAt",
                                 type: "timestamp",
                                 editable: true,
-                            }
+                            },
                         },
                         secondary: {
                             // nothing, to be filled by users
