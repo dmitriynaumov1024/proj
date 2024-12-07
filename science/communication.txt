@@ -33,6 +33,7 @@ check ./pages.txt
     -   post /clone
     -   get /find
     -   get /own-list
+    -   get /foreign-list
     -   delete /delete
 
 -   /api/project/involvement
@@ -47,8 +48,16 @@ check ./pages.txt
     plugin management
     -   post /create
     -   post /update
-    -   get /view?id={id}
-    -   get /list?page={page}&query={query}&authorId={authorId}
+    -   get /list
+    -   get /find
+
+-   /api/plugin/version
+    plugin version management
+    -   post /create
+    -   post /update
+    -   post /publish
+    -   get /list
+    -   get /find
 
 ## 3 WebSocket
 
@@ -56,7 +65,9 @@ check ./pages.txt
     -   Connect ({ session, project })
     -   UpdateProjectInfo ({ project })
     -   UpdateProjectTaskStatuses ({ taskStatuses })
+    -   UpdateProjectTaskFields ({ type, taskFields })
     -   UpdatePlugins ({ update, reorder, toggle, remove })
+    -   UpdateTask ({ add, update, remove })
     -   ...
 
 -   server >> client
@@ -70,4 +81,5 @@ check ./pages.txt
     -   Action.Forbidden
     -   Project.Data
     -   Project.DataPatch
+    -   Project.PatchTaskObjects
     -   ...

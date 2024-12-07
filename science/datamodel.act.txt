@@ -276,10 +276,11 @@
 + type: String
 + editable: Boolean
 + min: Number # for type=number|timestamp
-+ max: Number # for type=number|timestamp
++ max: Number # for type=number|timestamp|string
 + pattern: String # for type=string
 + values: String[] # for type=enum
 + default: Boolean|Number|String|Timestamp
++ dataSource: String # a name of data source defined in app.dataSources
 
 [27] TaskObject
 + id: String # random id
@@ -371,3 +372,41 @@
 + version: String # for external plugins
 + code: String # for inline plugins
 + enabled: Boolean
+
+# App
+
+WorkspaceAppLogic = {
+  menu: Array {
+    [value]: {
+      name: String
+      items: Array {
+        [value]: {
+          icon: VueComponent
+          name: String
+          route: String
+        }
+      }
+    }
+  }
+  pages: Map {
+    [key]: String
+    [value]: Function | VueComponent {
+      props: {
+        parent: Object
+        query: Object
+      }
+    }
+  }
+  dataSources: Map {
+    [key]: String
+    [value]: {
+      getItems: Function ({ project, user }) => Array
+      getDefault: Function ({ project, user }) => any
+      convertItem: Function (item: any) => { value: any, text: String }
+    }
+  }
+  methods: Map {
+    [key]: String
+    [value]: Function
+  }
+}
