@@ -142,7 +142,8 @@ export default {
                 this.errorMessage = this.$locale.current.error.notAuthorized
             }
             else if (result.notFound) {
-                this.notFound = this.$locale.current.error.notFound
+                this.notFound = true
+                this.errorMessage = this.$locale.current.error.notFound
             }
         },
         async getProjectOwner() {

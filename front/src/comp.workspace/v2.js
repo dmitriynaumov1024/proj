@@ -9,6 +9,7 @@ import { createTempStorage } from "@/lib/storage.js"
 import { nestedAssign } from "common/utils/object"
 import { base16id } from "common/utils/id"
 import { TaskObjectType as TOType } from "common/wsp/enums"
+import { getTimeZone } from "@/lib/utils.js"
 
 import * as ico from "@/comp.icon/index.js"
 import Menu from "./comp/menu.js"
@@ -77,6 +78,7 @@ const WorkspaceAppTemplate = {
             app.dataSources = WorkspaceApp.dataSources()
             // other stuff
             app.navigate = m((route, query)=> this.navigate(route, query))
+            app.tz = getTimeZone()
             app.ready = true
         },
         async createPlugins() {
@@ -176,6 +178,16 @@ const WorkspaceAppTemplate = {
             this.$socket.on("Project.DataPatch", (data)=> {
                 nestedAssign(this.$storage.project, data)
             })
+            this.$socket.on("Project.PatchTaskObjects", (data)=> {
+                let { before, after } = data
+                let project = this.$storage.project
+                for (let key in before) {
+                    if (!after[key]) delete project.data.taskObjects[key]
+                }
+                for (let key in after) {
+                    project.data.taskObjects[key] = after[key]
+                }
+            })
             this.$socket.on("User.Data", (data)=> {
                 this.$storage.user = data.user
             })
@@ -224,7 +236,10 @@ const WorkspaceAppTemplate = {
                     ] : h("p", { }, "Preparing app UI...")
                 ]) :
                 connection.error?
-                h("p", { class: ["color-bad"] }, connection.message) :
+                h("div", { class: ["text-center", "pad-05"] }, [
+                    h("p", { class: ["color-bad"] }, connection.message),
+                    h("p", { }, [ h("a", { href: "/" }, "go to main page") ])
+                ]) :
                 h("p", { }, "Connecting to workspace, please wait...")
             ]),
             h(FooterLayout, { style: {"flex-shrink": 0}, hless: true, wfull: true })

@@ -191,6 +191,10 @@ h2 {
   margin: auto;
 }
 
+.height-5 {
+  height: 5rem;
+}
+
 .height-10 {
   height: 10rem;
   resize: none;
@@ -495,3 +499,24 @@ input[invalid="true"], textarea[invalid="true"] {
 [display="false"][display="false"] {
   display: none;
 }
+
+.selectbox-header {
+  padding: 0.25rem;
+  border: 2px solid #bebebe;
+}
+
+.selectbox-body {
+  display: block;
+  position: absolute;
+  z-index: 10;
+  width: 99%;
+  left: 0; 
+  top: 120%;
+  min-height: 2.5rem;
+  max-height: 12rem;
+  overflow: scroll;
+  border: 2px solid #bebebe;
+  background-color: white;
+  box-shadow: 0 6px 34px rgba(10, 10, 12, 0.13);
+}
+

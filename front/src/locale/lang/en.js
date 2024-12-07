@@ -12,6 +12,7 @@ export default {
     },
     common: {
         loading: "Loading, please wait...",
+        today: "Today",
     },
     action: {
         edit: "Edit",

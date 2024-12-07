@@ -38,17 +38,22 @@ const WorkspaceAppPages = ()=> ({
     "settings.taskfields": m(pages.settings.taskfields),
     "settings.taskstatus": m(pages.settings.taskstatus),
     "settings.plugins": m(pages.settings.plugins),
-    "task.list": m(pages.task.list)
+    "task.list": m(pages.task.list),
+    "task.board": m(pages.task.board),
 })
 
 import { nestedAssign } from "common/utils/object"
 import { base16id } from "common/utils/id"
 import { TaskObjectType as TOType } from "common/wsp/enums"
+import { timestampToHHMM, timestampToDayMonthYear, days } from "@/lib/utils.js"
 
 const WorkspaceAppDataSources = ()=> ({
     id: {
         convertItem (item) { 
             return item 
+        },
+        restoreItem (value) {
+            return { value }
         },
         getItems () { 
             return null
@@ -78,15 +83,15 @@ const WorkspaceAppDataSources = ()=> ({
     userIds: {
         convertItem (user) {
             return { 
-                value: user.id, 
-                text: user ? `${user.displayName} @${user.userName}` : "null"
+                value: user?.id, 
+                text: user ? `${user.displayName} @${user.userName}` : "-"
             }
         },
         restoreItem (value) {
             return this.project.data.users[value]
         },
         getItems () {
-            return this.project.data.users
+            return Object.values(this.project.data.users)
         },
         getDefault () {
             return this.user
@@ -121,14 +126,11 @@ const WorkspaceAppDataSources = ()=> ({
             return item
         },
         restoreItem (value) {
-            return {
-                value: value,
-                text: new Date(value).toISOString()
-            }
+            return { value: value, text: `${timestampToDayMonthYear(value, this.app?.tz??0)} ${timestampToHHMM(value, this.app?.tz??0)}` }
         },
         getDefault () {
-            let now = Date.now()
-            return { value: now, text: new Date(now).toISOString() }
+            let value = Date.now()
+            return { value: value, text: `${timestampToDayMonthYear(value, this.app?.tz??0)} ${timestampToHHMM(value, this.app?.tz??0)}` }
         }
     }
 })

@@ -11,7 +11,8 @@ export default {
         name: "app.name",
     },
     common: {
-        loading: "common.loading"
+        loading: "common.loading",
+        today: "common.today",
     },
     action: {
         edit: "action.edit",
