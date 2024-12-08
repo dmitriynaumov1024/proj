@@ -1,0 +1,49 @@
+services:
+  
+  create-certs:
+    image: alpine:latest
+    volumes:
+      - .:/home/proj:rw
+    working_dir: /home/proj/var/openssl
+    command: './create-dev-cert.sh'
+
+  build-common:
+    image: node:18-alpine
+    volumes: 
+      - .:/home/proj:rw
+    working_dir: /home/proj/@common
+    command: 'npm run ci'
+
+  build-frontend:
+    depends_on:
+      build-common:
+        condition: service_completed_successfully
+    image: node:18-alpine
+    volumes:
+      - .:/home/proj:rw
+    working_dir: /home/proj/front
+    command: 'npm run ci'
+
+  build-backend:
+    depends_on:
+      build-frontend:
+        condition: service_completed_successfully
+    image: node:18-alpine
+    volumes:
+      - .:/home/proj:rw
+    working_dir: /home/proj/back
+    command: 'npm run ci'
+  
+  serve-backend:
+    depends_on:
+      create-certs:
+        condition: service_completed_successfully
+      build-backend:
+        condition: service_completed_successfully
+    image: node:18-alpine
+    volumes:
+      - .:/home/proj:rw
+    working_dir: /home/proj/back
+    command: 'npm run serve'
+    network_mode: host
+
