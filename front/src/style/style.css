@@ -63,6 +63,10 @@ div#app {
   scrollbar-width: none;
 }
 
+.if-ws {
+  display: none;
+}
+
 /* The width. Units are ww (outer width container, resizable), wc (inner width cont., resizable), w100 (always 100% width), ws (small width) */
 .ww, .wc, .ws {
   margin-right: auto;
@@ -109,6 +113,9 @@ div#app {
   }
   .wwc {
     max-width: 720px;
+  }
+  .if-ws {
+    display: unset;
   }
 }
 

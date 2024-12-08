@@ -210,7 +210,7 @@ const WorkspaceAppTemplate = {
     render() {
         const loc = this.$locale.current
         const connection = this.connection
-        const project = this.$storage.project
+        const { project, user } = this.$storage
         const app = this.$app
         return h("div", { class: ["h100", "flex-v"] }, [
             this.$storage.pluginscss?.map(css=> h("style", { }, css)),
@@ -218,7 +218,10 @@ const WorkspaceAppTemplate = {
                 h("div", { class: ["clickable"], active: this.expandMenu, role: "wsp-menu-handle", onClick: ()=> this.expandMenu = !this.expandMenu }, [
                     h(ico.MenuHandleIcon, { class: ["icon-20"] })
                 ]),
-                h("h2", { class: ["clickable"], onClick: ()=> this.navigate(defaultRoute) }, project?.title ?? loc.workspace.self)
+                h("h2", { class: ["clickable"], onClick: ()=> this.navigate(defaultRoute) }, project?.title ?? loc.workspace.self),
+                h("span", { class: ["flex-grow"] }, ""),
+                (user instanceof Object)?
+                h("span", { class: ["shaded", "if-ws", "pad-025-05"] }, "@"+user.userName) : null
             ]),
             h("div", { class: ["bv", "flex-grow", "scroll"] }, [
                 connection.ok?
