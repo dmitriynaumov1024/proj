@@ -6,7 +6,9 @@
     "scripts": {
         "dev": "node src/index.js",
         "exec": "node",
-        "curl": "node utils/CURL.js"
+        "curl": "node utils/CURL.js",
+        "ci": "npm install",
+        "serve": "node src/index.js"
     },
     "dependencies": {
         "better-express": "git+https://github.com/dmitriynaumov1024/lib-better-express.git",

@@ -6,7 +6,8 @@
         "dev": "vite --port 5000 --host",
         "build-prod": "vite build --mode prod",
         "build-debug": "vite build --mode debug --minify false",
-        "dist": "rm -rf ../back/dist && cp -r ./dist ../back/dist"
+        "dist": "rm -rf ../back/dist && cp -r ./dist ../back/dist",
+        "ci": "npm install && npm run build-prod && npm run dist"
     },
     "dependencies": {
         "buffer": "^6.0.3",

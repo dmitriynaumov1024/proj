@@ -9,5 +9,8 @@
     },
     "peerDependencies": {
         "buffer": "6.x"
+    },
+    "scripts": {
+        "ci": "npm install"
     }
 }
