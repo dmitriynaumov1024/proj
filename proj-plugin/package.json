@@ -1,0 +1,14 @@
+{
+  "name": "proj-plugin",
+  "version": "0.0.1",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "create": "./exec/create.js"
+  },
+  "author": "naumov1024",
+  "license": "MIT"
+}
