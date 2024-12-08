@@ -1,0 +1,16 @@
+/* dashboard-plugin@0.0.1 */
+
+div[plugin="dashboard-plugin"] {
+
+  .dashboard-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    column-gap: 0.5rem;
+
+    + .dashboard-row {
+        margin-top: 0.5rem;
+    }
+  }
+
+}
