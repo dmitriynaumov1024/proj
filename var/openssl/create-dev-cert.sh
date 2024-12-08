@@ -1,6 +1,10 @@
-mkdir cert
-mkdir key
-mkdir root
+#!/bin/sh
+
+[ -d "./cert" ] && echo 'certificates already exist.' && exit 0
+
+mkdir -p cert
+mkdir -p key
+mkdir -p root
 
 openssl req -x509 -sha256 \
 -nodes -newkey rsa:2048 -subj "/CN=localhost/C=UA" \
@@ -16,3 +20,5 @@ openssl x509 -req -sha256 \
 -extfile ./conf/localhost.cert.conf \
 -CA ./root/rootca.crt -CAkey ./root/rootca.key \
 -CAcreateserial -out ./cert/localhost.crt
+
+echo 'certificates created.'
