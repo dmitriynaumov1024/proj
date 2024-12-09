@@ -1,0 +1,23 @@
+services:
+
+  postgres:
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_USER: "user"
+      POSTGRES_PASSWORD: "user1234"
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    volumes:
+      - ./database/postgres-init:/docker-entrypoint-initdb.d:ro
+      - ./var:/var/lib/postgresql/data:rw
+    restart: unless-stopped
+    network_mode: host
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: '1G'
+
+  serve-backend:
+    depends:
+      postgres:
+        condition: service_started
