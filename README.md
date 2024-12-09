@@ -68,7 +68,12 @@ Configure .env:
 Prepare and Run:
 ```
 # assume in root directory of the repo
+
+# use this command for sqlite or external postgres instance
 docker-compose up
+
+# use this for dockerized postgres instance
+docker-compose --file compose.yaml --file database/postgres.compose.yaml up
 ```
 
 
