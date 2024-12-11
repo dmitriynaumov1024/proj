@@ -24,19 +24,19 @@
             <div class="mar-b-1 bb">
                 <p><b>{{g.head.text}}</b></p>
                 <div class="pad-05 text-mono">
-                    <template v-for="([status, count], i) in g.items.distribution">
+                    <template v-for="([status, count, percentage], i) in g.items.distribution">
                         <div class="dashboard-row">
-                            <div style="width: 15rem;" class="one-line">{{status}}</div>
-                            <div :style="{ height: '1rem', width: (0.25+20*count/Math.max(g.items.max, 1))+'rem', backgroundColor: this.colors[i%this.colors.length] }"></div>
-                            <div>{{count}}</div>
+                            <div style="width: 10rem;" class="one-line">{{status}}</div>
+                            <div :style="{ height: '1rem', width: (0.25+12*count/Math.max(g.items.max, 1))+'rem', backgroundColor: this.colors[i%this.colors.length] }"></div>
+                            <div>{{count}} ({{percentage}}%)</div>
                         </div>
                     </template>
                     <div class="dashboard-row">
-                        <div style="width: 15rem;" class="one-line"><b>max:</b></div>
+                        <div style="width: 10rem;" class="one-line"><b>max:</b></div>
                         <div><b>{{g.items.max}}</b></div>
                     </div>
                     <div class="dashboard-row">
-                        <div style="width: 15rem;" class="one-line"><b>total:</b></div>
+                        <div style="width: 10rem;" class="one-line"><b>total:</b></div>
                         <div><b>{{g.items.total}}</b></div>
                     </div>
                 </div>
@@ -93,6 +93,11 @@ const countingMethods = {
     }
 }
 
+function percent (value, total) {
+    if (Math.abs(total) <= 0.01) return 0
+    return Math.floor(100 * value / total)
+}
+
 function groupByStatus (statuses, items, countMetric) {
     let result = { max: 0, total: 0, distribution: { } }
     for (let item of items) {
@@ -104,7 +109,11 @@ function groupByStatus (statuses, items, countMetric) {
     }
     let distributionArray = [ ]
     for (let [name, {index}] of Object.entries(statuses)) {
-        distributionArray[index] = [name, result.distribution[name]??0]
+        distributionArray[index] = [
+            name, 
+            result.distribution[name]??0, 
+            percent(result.distribution[name]??0, result.total)
+        ]
     }
     return { max: result.max, total: result.total, distribution: distributionArray }
 }
